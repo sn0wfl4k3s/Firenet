@@ -3,12 +3,27 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
+    <Authors>Snowflakes</Authors>
+    <RepositoryUrl>https://github.com/sn0wfl4k3s/Firenet</RepositoryUrl>
+    <Description>Firestore orm for .net applications. Make easy the use of Firestore.</Description>
+    <Company />
+    <PackageProjectUrl>https://github.com/sn0wfl4k3s/Firenet</PackageProjectUrl>
+    <PackageIcon>fire.png</PackageIcon>
+    <PackageIconUrl />
+    <PackageTags>firenet;firestore;orm;nosql;infra;dotnet;</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Google.Cloud.Firestore" Version="2.4.0" />
     <PackageReference Include="Grpc.Core" Version="2.38.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="fire.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
