@@ -30,7 +30,7 @@ namespace Firenet
                 })
                 .ToList()
                 .ForEach(p => context.GetType().GetProperty(p.name).SetValue(context, p.value));
-            
+
             return context;
         }
     }
