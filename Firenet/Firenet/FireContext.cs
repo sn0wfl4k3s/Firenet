@@ -8,13 +8,16 @@ namespace Firenet
 {
     public abstract class FireContext : IAtomicTransaction
     {
+        /// <summary>
+        /// Json credential path of your firebase admin
+        /// </summary>
         protected abstract string JsonCredentials { get; }
 
         public FirestoreDb FirestoreDb { get; private set; }
 
         public FireContext()
         {
-            FirestoreDb = LoadCredentials(JsonCredentials);
+            FirestoreDb = LoadFirestoreDb(JsonCredentials);
         }
 
         #region AtomicTransaction Implementation
@@ -25,11 +28,10 @@ namespace Firenet
             => await FirestoreDb.RunTransactionAsync(callback);
         #endregion
 
-        private static FirestoreDb LoadCredentials(string jsonCredentialsPath)
+        private static FirestoreDb LoadFirestoreDb(string jsonCredentialsPath)
         {
-            string credentialsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, jsonCredentialsPath);
-            var jsonObject = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(credentialsPath));
-            var builder = new FirestoreDbBuilder { ProjectId = jsonObject.ProjectId, CredentialsPath = credentialsPath };
+            var jsonObject = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(jsonCredentialsPath));
+            var builder = new FirestoreDbBuilder { ProjectId = jsonObject.ProjectId, CredentialsPath = jsonCredentialsPath };
             return builder.Build();
         }
     }
