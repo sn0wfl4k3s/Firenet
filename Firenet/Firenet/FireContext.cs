@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Firenet
 {
-    public abstract class FireContext : IAtomicTransaction
+    public abstract class FireContext : IAtomicTransaction, IDisposable
     {
         /// <summary>
         /// Json credential path of your firebase admin
@@ -33,6 +33,11 @@ namespace Firenet
             var jsonObject = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(jsonCredentialsPath));
             var builder = new FirestoreDbBuilder { ProjectId = jsonObject.ProjectId, CredentialsPath = jsonCredentialsPath };
             return builder.Build();
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
         }
     }
 }
