@@ -37,11 +37,29 @@ namespace UnitTests
             Assert.Equal(added.Id, review.Id);
             Assert.Equal(added.Name, review.Name);
             Assert.Equal(added.Email, review.Email);
+            await _context.Users.DeleteAsync(added.Id);
         }
 
-        public void Dispose()
+        [Theory]
+        [InlineData("Joãozin@gmail.com", "jhon@gmail.com")]
+        [InlineData("fulano@gmail.com", "fulano2@gmail.com")]
+        [InlineData("mariazinha@gmail.com", "mariazinha_nçva@gmail.com")]
+        public async Task Update_users(string emailOld, string emailNew)
         {
-            _context.Dispose();
+            var user = new User { Name = "Random", Email = emailOld };
+            var added = await _context.Users.AddAsync(user);
+            var review = await _context.Users.FindAsync(added.Id);
+            Assert.Equal(added.Id, review.Id);
+            Assert.Equal(added.Name, review.Name);
+            Assert.Equal(added.Email, emailOld);
+            review.Email = emailNew;
+            var updated = await _context.Users.UpdateAsync(added.Id, review);
+            Assert.Equal(updated.Id, review.Id);
+            Assert.Equal(updated.Name, review.Name);
+            Assert.Equal(updated.Email, emailNew);
+            await _context.Users.DeleteAsync(review.Id);
         }
+
+        public void Dispose() => _context.Dispose();
     }
 }
