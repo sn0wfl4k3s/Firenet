@@ -11,6 +11,7 @@
     <PackageIcon>fire.png</PackageIcon>
     <PackageIconUrl />
     <PackageTags>firenet;firestore;orm;nosql;infra;dotnet;database;</PackageTags>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
