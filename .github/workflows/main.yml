@@ -17,11 +17,6 @@ jobs:
       run: |
         cd Firenet/
         dotnet restore
-        
-    - name: Executando os Testes
-      run: |
-        cd Firenet/
-        dotnet test --nologo --verbosity normal
     
     - name: Buildando os pacotes
       run: |
