@@ -1,5 +1,5 @@
 # Firenet
-Firestore orm for .net applications. A simple to manipulate firestore database in an easy way keeping the same domain driven developer.
+Firestore orm for .net applications. A simple easy way to manipulate firestore database and keeping the same domain driven developer.
 
 
 ## Installation
