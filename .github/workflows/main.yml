@@ -1,8 +1,8 @@
-name: Firenet - Release
+name: Nuget - Release
 
 on:
   push:
-    branches: [ release ]
+    branches: [ main ]
 
 jobs:
   publish-nuget:
