@@ -24,6 +24,7 @@
     <None Include="fire.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
