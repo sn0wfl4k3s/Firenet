@@ -1,4 +1,7 @@
+
+
 # Firenet
+
 Firestore orm for .net applications. A simple easy way to manipulate firestore database and keeping the same domain driven developer.
 
 
@@ -15,7 +18,7 @@ Put the data annotations in the class model and properties:
 ![image](https://user-images.githubusercontent.com/30809620/120728408-3a39f900-c4b3-11eb-93c9-05eb8607b59d.png)
 
 Create a class the implement 'FireContext', and write the jsonCredential with the path and create the fireCollections that represents the models that you want:  
-![image](https://user-images.githubusercontent.com/30809620/120727771-c519f400-c4b1-11eb-9685-58c2743cbdbc.png) 
+![image](https://user-images.githubusercontent.com/30809620/120728708-e4b21c00-c4b3-11eb-812a-06943586914d.png)
 
 Add on startup configureServices:  
 ![image](https://user-images.githubusercontent.com/30809620/120727866-feeafa80-c4b1-11eb-8e81-b4feab63224f.png) 
