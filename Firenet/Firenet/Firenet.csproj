@@ -5,12 +5,12 @@
     <LangVersion>Latest</LangVersion>
     <Authors>Snowflakes</Authors>
     <RepositoryUrl>https://github.com/sn0wfl4k3s/Firenet</RepositoryUrl>
-    <Description>Firestore orm for .net applications. Make easy the use of Firestore.</Description>
+    <Description>Firestore orm for .net applications.</Description>
     <Company />
     <PackageProjectUrl>https://github.com/sn0wfl4k3s/Firenet</PackageProjectUrl>
     <PackageIcon>fire.png</PackageIcon>
     <PackageIconUrl />
-    <PackageTags>firenet;firestore;orm;nosql;infra;dotnet;</PackageTags>
+    <PackageTags>firenet;firestore;orm;nosql;infra;dotnet;database;</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
