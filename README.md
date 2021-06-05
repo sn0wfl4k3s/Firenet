@@ -19,9 +19,10 @@ Put the data annotations in the class model and properties:
 ![image](https://user-images.githubusercontent.com/30809620/120728408-3a39f900-c4b3-11eb-93c9-05eb8607b59d.png)
 
 Create a class the implement 'FireContext', and write the jsonCredential with the path and create the fireCollections that represents the models that you want store:  
-![image](https://user-images.githubusercontent.com/30809620/120728708-e4b21c00-c4b3-11eb-812a-06943586914d.png)
+![image](https://user-images.githubusercontent.com/30809620/120728708-e4b21c00-c4b3-11eb-812a-06943586914d.png)  
+
 You can put data annotation 'CollectionName' for informate the name of collection. If doesn't have collection name attribute, the name of collection will be the name of object IFireCollection ('Users' in this example).  
-![image](https://user-images.githubusercontent.com/30809620/120899388-dbd15f80-c605-11eb-838f-16fd3f0104d1.png)
+![image](https://user-images.githubusercontent.com/30809620/120899388-dbd15f80-c605-11eb-838f-16fd3f0104d1.png) 
 
 
 Add on startup configureServices:  
