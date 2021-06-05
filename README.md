@@ -21,7 +21,7 @@ Put the data annotations in the class model and properties:
 Create a class the implement 'FireContext', and write the jsonCredential with the path and create the fireCollections that represents the models that you want store:  
 ![image](https://user-images.githubusercontent.com/30809620/120728708-e4b21c00-c4b3-11eb-812a-06943586914d.png)  
 
-You can put data annotation 'CollectionName' for informate the name of collection. If doesn't have collection name attribute, the name of collection will be the name of object IFireCollection ('Users' in this example).  
+You can put data annotation 'CollectionName' for informate the name of collection. If it doesn't have collection name data annotation, the name of collection will be the name of object IFireCollection ('Users' in this example).  
 ![image](https://user-images.githubusercontent.com/30809620/120899679-4df67400-c607-11eb-932b-b6588bc39002.png)
 
 
