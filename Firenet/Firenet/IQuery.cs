@@ -10,7 +10,7 @@ namespace Firenet
         /// Contruct a query for your search.
         /// </summary>
         /// <returns></returns>
-        Query Query();
+        FireQuery<TEntity> AsQueriable();
 
         /// <summary>
         /// Return one entity with the id or path of the document.

@@ -24,9 +24,10 @@ namespace Firenet
         }
 
         #region Queries Implementation
-        public virtual Query Query()
+
+        public virtual FireQuery<TEntity> AsQueriable()
         {
-            return _database.Collection(_collectionName);
+            return new FireQuery<TEntity>(_database.Collection(_collectionName));
         }
 
         public virtual TEntity Find(string id)

@@ -1,5 +1,6 @@
 using Firenet;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnitTests.Models;
@@ -17,6 +18,28 @@ namespace UnitTests
         }
 
         [Fact]
+        public async Task Query()
+        {
+            var usersThere = await _context.Users.ToListAsync();
+            await _context.Users.DeleteRangeAsync(usersThere.Select(u => u.Id));
+            var users = new List<User>
+            {
+                new User { Name = "Eduardo", Email = "eduardo@gmail.com" },
+                new User { Name = "Eduarda", Email = "eduarda@gmail.com" },
+                new User { Name = "Ronaldo", Email = "ronaldo@gmail.com" },
+            };
+            var added = await _context.Users.AddRangeAsync(users);
+            var query1 = _context.Users.AsQueriable().Where(u => u.Name == "Eduardo" || u.Name == "Ronaldo").ToList();
+            Assert.True(query1.Count() == 2);
+            Assert.Contains(query1, q => q.Name == "Eduardo");
+            Assert.Contains(query1, q => q.Name == "Ronaldo");
+            var query2 = _context.Users.AsQueriable().Where(u => u.Name.Contains("do")).ToList();
+            Assert.True(query2.Count() == 2, $"Quantidade: {query2.Count()}");
+            Assert.Contains(query2, q => q.Name == "Eduardo");
+            Assert.Contains(query2, q => q.Name == "Ronaldo");
+        }
+
+        [Fact(Skip = "funcionando")]
         public async Task Delete_all()
         {
             var users = await _context.Users.ToListAsync();
@@ -25,7 +48,7 @@ namespace UnitTests
             Assert.True(users.Count() is 0);
         }
 
-        [Theory]
+        [Theory(Skip = "funcionando")]
         [InlineData("Fulano", "fulano@gmail.com")]
         [InlineData("Maria", "mariazinha@gmail.com")]
         [InlineData("João", "Joãozin@gmail.com")]
@@ -40,7 +63,7 @@ namespace UnitTests
             await _context.Users.DeleteAsync(added.Id);
         }
 
-        [Theory]
+        [Theory(Skip = "funcionando")]
         [InlineData("Joãozin@gmail.com", "jhon@gmail.com")]
         [InlineData("fulano@gmail.com", "fulano2@gmail.com")]
         [InlineData("mariazinha@gmail.com", "mariazinha_nçva@gmail.com")]
