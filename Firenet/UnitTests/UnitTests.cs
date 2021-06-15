@@ -29,14 +29,21 @@ namespace UnitTests
                 new User { Name = "Ronaldo", Email = "ronaldo@gmail.com" },
             };
             var added = await _context.Users.AddRangeAsync(users);
-            var query1 = _context.Users.AsQueriable().Where(u => u.Name == "Eduardo" || u.Name == "Ronaldo").ToList();
-            Assert.True(query1.Count() == 2);
-            Assert.Contains(query1, q => q.Name == "Eduardo");
-            Assert.Contains(query1, q => q.Name == "Ronaldo");
-            var query2 = _context.Users.AsQueriable().Where(u => u.Name.Contains("do")).ToList();
-            Assert.True(query2.Count() == 2, $"Quantidade: {query2.Count()}");
-            Assert.Contains(query2, q => q.Name == "Eduardo");
-            Assert.Contains(query2, q => q.Name == "Ronaldo");
+
+            IEnumerable<User> query;
+            
+            query = _context.Users.AsQueriable().Where(u => u.Name == "Eduardo" || u.Name == "Ronaldo").ToList();
+            Assert.True(query.Count() == 2, $"Retornaram {query.Count()} elementos.");
+            Assert.Contains(query, q => q.Name == "Eduardo");
+            Assert.Contains(query, q => q.Name == "Ronaldo");
+
+            query = _context.Users.AsQueriable().Where(u => u.Name == "Eduardo" && u.Email == "nothing@gmail.com").ToList();
+            Assert.True(query.Count() == 0, $"Retornaram {query.Count()} elementos.");
+
+            //query = _context.Users.AsQueriable().Where(u => u.Name.StartsWith("Edu")).ToList();
+            //Assert.True(query.Count() == 2, $"Retornaram {query.Count()} elementos.");
+            //Assert.Contains(query, q => q.Name == "Eduardo");
+            //Assert.Contains(query, q => q.Name == "Eduarda");
         }
 
         [Fact(Skip = "funcionando")]

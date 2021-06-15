@@ -5,14 +5,17 @@ namespace Firenet
 {
     public class FireQuery<T> where T : class
     {
-        public Query SourceQuery { get; private set; }
+        private readonly Query _sourceQuery;
 
-        public IList<Query> Queries { get; private set; }
+        public Query SourceQuery => _sourceQuery;
+
+        public IList<Query> Queries { get; set; } = new List<Query>();
 
         public FireQuery(Query query)
         {
-            SourceQuery = query;
-            Queries = new List<Query>();
+            _sourceQuery = query;
         }
+
+
     }
 }
