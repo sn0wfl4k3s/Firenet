@@ -24,36 +24,33 @@ namespace Firenet
         }
 
         #region Queries Implementation
+        public virtual Query Query()
+        {
+            return _database.Collection(_collectionName);
+        }
 
         public virtual FireQuery<TEntity> AsQueriable()
         {
             return new FireQuery<TEntity>(_database.Collection(_collectionName));
         }
 
-        public virtual TEntity Find(string id)
+        public virtual TEntity Find(string documentId)
         {
-            DocumentReference docRef = _database.Collection(_collectionName).Document(id);
-            return docRef.GetSnapshot().ConvertTo<TEntity>();
+            return _database.Collection(_collectionName).Document(documentId).GetSnapshot().ConvertTo<TEntity>();
         }
 
-        public virtual async Task<TEntity> FindAsync(string id)
+        public virtual async Task<TEntity> FindAsync(string documentId) => await Task.FromResult(Find(documentId));
+
+        public virtual IEnumerable<TEntity> ToEnumerable()
         {
-            DocumentReference docRef = _database.Collection(_collectionName).Document(id);
-            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-            return snapshot.ConvertTo<TEntity>();
+            return _database.Collection(_collectionName).GetSnapshot().Documents.Select(d => d.ConvertTo<TEntity>());
         }
 
-        public virtual IEnumerable<TEntity> ToList()
-        {
-            QuerySnapshot querySnapshot = _database.Collection(_collectionName).GetSnapshot();
-            return querySnapshot.Documents.Select(d => d.ConvertTo<TEntity>());
-        }
+        public virtual TEntity[] ToArray() => ToEnumerable().ToArray();
+        public virtual List<TEntity> ToList() => ToEnumerable().ToList();
+        public virtual async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
+        public virtual async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
 
-        public virtual async Task<IEnumerable<TEntity>> ToListAsync()
-        {
-            QuerySnapshot querySnapshot = await _database.Collection(_collectionName).GetSnapshotAsync();
-            return querySnapshot.Documents.Select(d => d.ConvertTo<TEntity>());
-        }
         #endregion
 
         #region CommandSync Implementation
@@ -107,12 +104,12 @@ namespace Firenet
 
         public virtual IEnumerable<TEntity> AddRange(IEnumerable<TEntity> entities, Transaction transaction = null)
         {
-            return entities.Select(e => Add(e, transaction));
+            return entities.AsParallel().Select(e => Add(e, transaction)).ToList();
         }
 
         public virtual IEnumerable<TEntity> UpdateRange(IDictionary<string, TEntity> idsAndEntities, Transaction transaction = null)
         {
-            return idsAndEntities.Select(e => Update(e.Key, e.Value, transaction));
+            return idsAndEntities.Select(e => Update(e.Key, e.Value, transaction)).ToList();
         }
 
         public virtual void DeleteRange(IEnumerable<string> ids, Transaction transaction = null)
@@ -137,7 +134,7 @@ namespace Firenet
 
         public virtual async Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities, Transaction transaction = null)
         {
-            Task<TEntity>[] updateTasks = entities.Select(e => AddAsync(e, transaction)).ToArray();
+            Task<TEntity>[] updateTasks = entities.AsParallel().Select(e => AddAsync(e, transaction)).ToArray();
             await Task.WhenAll(updateTasks);
             return updateTasks.Select(t => t.GetAwaiter().GetResult());
         }
@@ -168,9 +165,9 @@ namespace Firenet
 
         public virtual async Task<IEnumerable<TEntity>> UpdateRangeAsync(IDictionary<string, TEntity> entities, Transaction transaction = null)
         {
-            Task<TEntity>[] updateTasks = entities.Select(e => UpdateAsync(e.Key, e.Value, transaction)).ToArray();
+            Task<TEntity>[] updateTasks = entities.AsParallel().Select(e => UpdateAsync(e.Key, e.Value, transaction)).ToArray();
             await Task.WhenAll(updateTasks);
-            return updateTasks.Select(t => t.GetAwaiter().GetResult());
+            return updateTasks.AsParallel().Select(t => t.GetAwaiter().GetResult());
         }
 
         public virtual async Task DeleteAsync(string id, Transaction transaction = null)
@@ -188,7 +185,7 @@ namespace Firenet
 
         public async virtual Task DeleteRangeAsync(IEnumerable<string> ids, Transaction transaction = null)
         {
-            Task[] updateTasks = ids.Select(id => DeleteAsync(id, transaction)).ToArray();
+            Task[] updateTasks = ids.AsParallel().Select(id => DeleteAsync(id, transaction)).ToArray();
             await Task.WhenAll(updateTasks);
             await Task.CompletedTask;
         }

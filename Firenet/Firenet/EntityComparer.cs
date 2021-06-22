@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Firenet
 {
-    class EntityComparer<TEntity> : IEqualityComparer<TEntity>
+    internal class EntityComparer<TEntity> : IEqualityComparer<TEntity>
     {
         public bool Equals(TEntity x, TEntity y)
         {
