@@ -1,6 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -8,37 +9,74 @@ namespace Firenet
 {
     internal static class FireQueryExtensions
     {
-        public static Query AddQuery<TEntity>(this Query query, string stringExpression)
+        public static Query AddQuery<TEntity>(this Query query, Expression expression)
         {
-            string[] splitted = Regex.Split(stringExpression, "(\\.{1}|\\\"|(\\s))");
+            string stringExpression = expression.ToString();
 
             PropertyInfo property = typeof(TEntity)
                 .GetRuntimeProperties()
                 .FirstOrDefault(p => stringExpression.Contains(p.Name, StringComparison.InvariantCultureIgnoreCase));
-
-            return splitted switch
+            
+            var binary = expression as BinaryExpression;
+            
+            string value = binary switch
             {
-                var e when typeof(bool).Equals(property.PropertyType) && splitted.Length == 1
-                    => query.WhereEqualTo(property.Name, !stringExpression.Contains("Not")),
-                var e when "==".Equals(e[3]) && typeof(string).Equals(property.PropertyType) => query.WhereEqualTo(e[0], e[8]),
-                var e when "==".Equals(e[3]) && typeof(bool).Equals(property.PropertyType)
-                    && (bool.TrueString.Equals(e[6]) || bool.FalseString.Equals(e[6]))
-                    => query.WhereEqualTo(e[0], bool.Parse(e[6])),
-                var e when "==".Equals(e[3]) => query.WhereEqualTo(e[0], double.Parse(e[6])),
-                var e when "!=".Equals(e[3]) && typeof(string).Equals(property.PropertyType) => query.WhereNotEqualTo(e[0], e[8]),
-                var e when "!=".Equals(e[3]) && typeof(bool).Equals(property.PropertyType)
-                    && (bool.TrueString.Equals(e[6]) || bool.FalseString.Equals(e[6]))
-                    => query.WhereNotEqualTo(e[0], bool.Parse(e[6])),
-                var e when "!=".Equals(e[3]) => query.WhereNotEqualTo(e[0], double.Parse(e[6])),
-                var e when "<".Equals(e[3]) => query.WhereLessThan(e[0], double.Parse(e[6])),
-                var e when ">".Equals(e[3]) => query.WhereGreaterThan(e[0], double.Parse(e[6])),
-                var e when "<=".Equals(e[3]) => query.WhereLessThanOrEqualTo(e[0], double.Parse(e[6])),
-                var e when ">=".Equals(e[3]) => query.WhereGreaterThanOrEqualTo(e[0], double.Parse(e[6])),
-                var e when "StartsWith".Equals(e[2]) => query
-                    .WhereLessThanOrEqualTo(e[0], e[4] + '~')
-                    .WhereGreaterThanOrEqualTo(e[0], e[4]),
-                _ => throw new InvalidOperationException($"Operation '{stringExpression}' is not supported.")
+                var b when b != null && !b.Left.ToString().Contains(property.Name) 
+                    => b.Left.ToString().Replace("\"", string.Empty),
+                var b when b != null && !b.Right.ToString().Contains(property.Name) 
+                    => b.Right.ToString().Replace("\"", string.Empty),
+                _ => null
             };
+
+            if (typeof(bool).Equals(property.PropertyType))
+            {
+                return expression.NodeType switch
+                {
+                    ExpressionType.Not => query.WhereEqualTo(property.Name, false),
+                    ExpressionType.MemberAccess => query.WhereEqualTo(property.Name, true),
+                    ExpressionType.NotEqual => query.WhereEqualTo(property.Name, stringExpression.Contains(bool.TrueString)),
+                    ExpressionType.Equal => query.WhereEqualTo(property.Name, stringExpression.Contains(bool.TrueString)),
+                    _ => throw new InvalidOperationException()
+                };
+            }
+            
+            if (typeof(string).Equals(property.PropertyType))
+            {
+                if (stringExpression.Contains(".StartsWith("))
+                {
+                    value = Regex.Replace(stringExpression, @".*?StartsWith\(\""|\""\)", string.Empty);
+                    return query
+                        .WhereLessThanOrEqualTo(property.Name, value + '~')
+                        .WhereGreaterThanOrEqualTo(property.Name, value);
+                }
+
+                return expression.NodeType switch
+                {
+                    ExpressionType.Equal => query.WhereEqualTo(property.Name, value),
+                    ExpressionType.NotEqual => query.WhereNotEqualTo(property.Name, value),
+                    _ => throw new InvalidOperationException()
+                };
+            }
+
+            if (typeof(float).Equals(property.PropertyType) || 
+                typeof(double).Equals(property.PropertyType) || 
+                typeof(decimal).Equals(property.PropertyType) || 
+                typeof(int).Equals(property.PropertyType) || 
+                typeof(long).Equals(property.PropertyType))
+            {
+                return expression.NodeType switch
+                {
+                    ExpressionType.Equal => query.WhereEqualTo(property.Name, double.Parse(value)),
+                    ExpressionType.NotEqual => query.WhereNotEqualTo(property.Name, double.Parse(value)),
+                    ExpressionType.GreaterThan => query.WhereGreaterThan(property.Name, double.Parse(value)),
+                    ExpressionType.GreaterThanOrEqual => query.WhereGreaterThanOrEqualTo(property.Name, double.Parse(value)),
+                    ExpressionType.LessThanOrEqual => query.WhereLessThanOrEqualTo(property.Name, double.Parse(value)),
+                    ExpressionType.LessThan => query.WhereLessThan(property.Name, double.Parse(value)),
+                    _ => throw new InvalidOperationException()
+                };
+            }
+
+            return query;
         }
 
     }

@@ -45,9 +45,10 @@ namespace Firenet
 
         public FireQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression)
         {
-            List<List<string>> MapQueries(Expression exp)
+            List<List<Expression>> MapQueries(Expression exp)
             {
                 var binary = exp as BinaryExpression;
+
                 if (binary is not null)
                 {
                     if (exp.NodeType is ExpressionType.And or ExpressionType.AndAlso or ExpressionType.AndAssign)
@@ -65,19 +66,18 @@ namespace Firenet
                         return left;
                     }
                 }
-                string stringExp =
-                    Regex.Replace(exp.ToString(), $@"\(|\)|{expression.Parameters[0].Name}\.", string.Empty);
-                return new List<List<string>>() { new List<string> { stringExp } };
+                
+                return new List<List<Expression>>() { new List<Expression> { exp } };
             }
 
             var entryExpression = expression.CanReduce ? expression.Body.Reduce() : expression.Body;
 
-            var queries = MapQueries(entryExpression);
+            var expressionGroups = MapQueries(entryExpression);
 
-            foreach (var list in queries)
+            foreach (var expressions in expressionGroups)
             {
                 var quering = SourceQuery;
-                list.ForEach(queryStr => quering = quering.AddQuery<TEntity>(queryStr));
+                expressions.ForEach(exp => quering = quering.AddQuery<TEntity>(exp));
                 Queries.Add(quering);
             }
 
