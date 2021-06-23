@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -56,6 +57,7 @@ namespace Firenet
         #region CommandSync Implementation
         public virtual TEntity Add(TEntity entity, Transaction transaction = null)
         {
+            entity = entity.SetUtcDatetimes();
             CollectionReference colRef = _database.Collection(_collectionName);
             if (transaction is not null)
             {
@@ -69,6 +71,7 @@ namespace Firenet
 
         public virtual TEntity Update(string id, TEntity entity, Transaction transaction = null)
         {
+            entity = entity.SetUtcDatetimes();
             DocumentReference docReference = _database.Collection(_collectionName).Document(id);
             if (transaction is not null)
             {
@@ -109,18 +112,19 @@ namespace Firenet
 
         public virtual IEnumerable<TEntity> UpdateRange(IDictionary<string, TEntity> idsAndEntities, Transaction transaction = null)
         {
-            return idsAndEntities.Select(e => Update(e.Key, e.Value, transaction)).ToList();
+            return idsAndEntities.AsParallel().Select(e => Update(e.Key, e.Value, transaction)).ToList();
         }
 
         public virtual void DeleteRange(IEnumerable<string> ids, Transaction transaction = null)
         {
-            ids.ToList().ForEach(id => Delete(id, transaction));
+            ids.AsParallel().ForAll(id => Delete(id, transaction));
         }
         #endregion
 
         #region CommandAsync Implementation
         public virtual async Task<TEntity> AddAsync(TEntity entity, Transaction transaction = null)
         {
+            entity = entity.SetUtcDatetimes();
             CollectionReference colRef = _database.Collection(_collectionName);
             if (transaction is not null)
             {
@@ -141,6 +145,7 @@ namespace Firenet
 
         public virtual async Task<TEntity> UpdateAsync(string id, TEntity entity, Transaction transaction = null)
         {
+            entity = entity.SetUtcDatetimes();
             DocumentReference docReference = _database.Collection(_collectionName).Document(id);
             if (transaction is not null)
             {

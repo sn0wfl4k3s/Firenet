@@ -16,14 +16,14 @@ namespace Firenet
             PropertyInfo property = typeof(TEntity)
                 .GetRuntimeProperties()
                 .FirstOrDefault(p => stringExpression.Contains(p.Name, StringComparison.InvariantCultureIgnoreCase));
-            
+
             var binary = expression as BinaryExpression;
-            
+
             string value = binary switch
             {
-                var b when b != null && !b.Left.ToString().Contains(property.Name) 
+                var b when b != null && !b.Left.ToString().Contains(property.Name)
                     => b.Left.ToString().Replace("\"", string.Empty),
-                var b when b != null && !b.Right.ToString().Contains(property.Name) 
+                var b when b != null && !b.Right.ToString().Contains(property.Name)
                     => b.Right.ToString().Replace("\"", string.Empty),
                 _ => null
             };
@@ -39,7 +39,7 @@ namespace Firenet
                     _ => throw new InvalidOperationException()
                 };
             }
-            
+
             if (typeof(string).Equals(property.PropertyType))
             {
                 if (stringExpression.Contains(".StartsWith("))
@@ -58,11 +58,7 @@ namespace Firenet
                 };
             }
 
-            if (typeof(float).Equals(property.PropertyType) || 
-                typeof(double).Equals(property.PropertyType) || 
-                typeof(decimal).Equals(property.PropertyType) || 
-                typeof(int).Equals(property.PropertyType) || 
-                typeof(long).Equals(property.PropertyType))
+            if (double.TryParse(value, out _))
             {
                 return expression.NodeType switch
                 {
@@ -76,7 +72,23 @@ namespace Firenet
                 };
             }
 
-            return query;
+            if (typeof(DateTime).Equals(property.PropertyType) || typeof(DateTime?).Equals(property.PropertyType))
+            {
+                var datetimeValue = DateTime.SpecifyKind(Convert.ToDateTime(value), DateTimeKind.Utc);
+
+                return expression.NodeType switch
+                {
+                    ExpressionType.Equal => query.WhereEqualTo(property.Name, datetimeValue),
+                    ExpressionType.NotEqual => query.WhereNotEqualTo(property.Name, datetimeValue),
+                    ExpressionType.GreaterThan => query.WhereGreaterThan(property.Name, datetimeValue),
+                    ExpressionType.GreaterThanOrEqual => query.WhereGreaterThanOrEqualTo(property.Name, datetimeValue),
+                    ExpressionType.LessThanOrEqual => query.WhereLessThanOrEqualTo(property.Name, datetimeValue),
+                    ExpressionType.LessThan => query.WhereLessThan(property.Name, datetimeValue),
+                    _ => throw new InvalidOperationException()
+                };
+            }
+
+            throw new InvalidOperationException();
         }
 
     }

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Firenet
@@ -66,7 +65,7 @@ namespace Firenet
                         return left;
                     }
                 }
-                
+
                 return new List<List<Expression>>() { new List<Expression> { exp } };
             }
 

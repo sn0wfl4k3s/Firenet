@@ -21,6 +21,9 @@ namespace UnitTests.Models
         [FirestoreProperty]
         public int Points { get; set; }
 
+        [FirestoreProperty]
+        public DateTime? Release { get; set; }
+
         [FirestoreDocumentCreateTimestamp]
         public DateTime Created { get; set; }
     }

@@ -1,4 +1,5 @@
 using Firenet;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnitTests.Models;
@@ -138,6 +139,16 @@ namespace UnitTests
             Assert.Contains(query, q => q.Name == "Eduardo");
             Assert.Contains(query, q => q.Name == "Ronaldo");
             Assert.Contains(query, q => q.Name == "Fabiana");
+        }
+
+        [Fact(DisplayName = "Query com Datetime")]
+        public void Query9()
+        {
+            query = _context.Users.AsQueriable().Where(u => u.Release > DateTime.Now.AddYears(-4)).ToList();
+            Assert.True(query.Count() == 3, $"Retornaram {query.Count()} elementos.");
+            Assert.Contains(query, q => q.Name == "Eduardo");
+            Assert.Contains(query, q => q.Name == "Ricardo");
+            Assert.Contains(query, q => q.Name == "Eduarda");
         }
     }
 }
