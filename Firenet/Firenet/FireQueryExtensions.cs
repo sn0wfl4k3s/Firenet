@@ -17,14 +17,12 @@ namespace Firenet
                 .GetRuntimeProperties()
                 .FirstOrDefault(p => stringExpression.Contains(p.Name, StringComparison.InvariantCultureIgnoreCase));
 
-            var binary = expression as BinaryExpression;
-
-            string value = binary switch
+            Expression value = (expression as BinaryExpression) switch
             {
                 var b when b != null && !b.Left.ToString().Contains(property.Name)
-                    => b.Left.ToString().Replace("\"", string.Empty),
+                    => b.Left,
                 var b when b != null && !b.Right.ToString().Contains(property.Name)
-                    => b.Right.ToString().Replace("\"", string.Empty),
+                    => b.Right,
                 _ => null
             };
 
@@ -42,39 +40,48 @@ namespace Firenet
 
             if (typeof(string).Equals(property.PropertyType))
             {
+                string stringValue = string.Empty;
+
                 if (stringExpression.Contains(".StartsWith("))
                 {
-                    value = Regex.Replace(stringExpression, @".*?StartsWith\(\""|\""\)", string.Empty);
+                    stringValue = Regex.Replace(stringExpression, @".*?StartsWith\(\""|\""\)", string.Empty);
+                    
                     return query
-                        .WhereLessThanOrEqualTo(property.Name, value + '~')
-                        .WhereGreaterThanOrEqualTo(property.Name, value);
+                        .WhereLessThanOrEqualTo(property.Name, stringValue + '~')
+                        .WhereGreaterThanOrEqualTo(property.Name, stringValue);
                 }
+
+                stringValue = Expression.Lambda(value).Compile().DynamicInvoke() as string;
 
                 return expression.NodeType switch
                 {
-                    ExpressionType.Equal => query.WhereEqualTo(property.Name, value),
-                    ExpressionType.NotEqual => query.WhereNotEqualTo(property.Name, value),
+                    ExpressionType.Equal => query.WhereEqualTo(property.Name, stringValue),
+                    ExpressionType.NotEqual => query.WhereNotEqualTo(property.Name, stringValue),
                     _ => throw new InvalidOperationException()
                 };
             }
 
-            if (double.TryParse(value, out _))
+            if (double.TryParse(value.ToString(), out _))
             {
+                double numericValue = double.Parse(value.ToString());
+
                 return expression.NodeType switch
                 {
-                    ExpressionType.Equal => query.WhereEqualTo(property.Name, double.Parse(value)),
-                    ExpressionType.NotEqual => query.WhereNotEqualTo(property.Name, double.Parse(value)),
-                    ExpressionType.GreaterThan => query.WhereGreaterThan(property.Name, double.Parse(value)),
-                    ExpressionType.GreaterThanOrEqual => query.WhereGreaterThanOrEqualTo(property.Name, double.Parse(value)),
-                    ExpressionType.LessThanOrEqual => query.WhereLessThanOrEqualTo(property.Name, double.Parse(value)),
-                    ExpressionType.LessThan => query.WhereLessThan(property.Name, double.Parse(value)),
+                    ExpressionType.Equal => query.WhereEqualTo(property.Name, numericValue),
+                    ExpressionType.NotEqual => query.WhereNotEqualTo(property.Name, numericValue),
+                    ExpressionType.GreaterThan => query.WhereGreaterThan(property.Name, numericValue),
+                    ExpressionType.GreaterThanOrEqual => query.WhereGreaterThanOrEqualTo(property.Name, numericValue),
+                    ExpressionType.LessThanOrEqual => query.WhereLessThanOrEqualTo(property.Name, numericValue),
+                    ExpressionType.LessThan => query.WhereLessThan(property.Name, numericValue),
                     _ => throw new InvalidOperationException()
                 };
             }
 
             if (typeof(DateTime).Equals(property.PropertyType) || typeof(DateTime?).Equals(property.PropertyType))
             {
-                var datetimeValue = DateTime.SpecifyKind(Convert.ToDateTime(value), DateTimeKind.Utc);
+                DateTime datetimeValue = (DateTime) Expression.Lambda(value).Compile().DynamicInvoke();
+
+                datetimeValue = DateTime.SpecifyKind(datetimeValue, DateTimeKind.Utc);
 
                 return expression.NodeType switch
                 {
