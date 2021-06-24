@@ -6,7 +6,7 @@ namespace Firenet
 {
     public static class FireCollectionExtensions
     {
-        public static TEntity SetUtcDatetimes<TEntity>(this TEntity entity) 
+        public static TEntity SetUtcDatetimes<TEntity>(this TEntity entity)
             where TEntity : class
         {
             bool ValidProperty(PropertyInfo p) =>

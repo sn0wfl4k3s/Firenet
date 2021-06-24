@@ -1,4 +1,3 @@
-using Firenet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -139,6 +138,12 @@ namespace UnitTests
             Assert.Contains(query, q => q.Name == "Eduardo");
             Assert.Contains(query, q => q.Name == "Ronaldo");
             Assert.Contains(query, q => q.Name == "Fabiana");
+
+            //query = _context.Users.AsQueriable().Where(u => u.Points > 30 && !u.IsAdmin).ToList();
+            //Assert.True(query.Count() == 2, $"Retornaram {query.Count()} elementos.");
+            ////Assert.Contains(query, q => q.Name == "Eduardo");
+            //Assert.Contains(query, q => q.Name == "Ronaldo");
+            //Assert.Contains(query, q => q.Name == "Fabiana");
         }
 
         [Fact(DisplayName = "Query com Datetime")]
@@ -149,6 +154,23 @@ namespace UnitTests
             Assert.Contains(query, q => q.Name == "Eduardo");
             Assert.Contains(query, q => q.Name == "Ricardo");
             Assert.Contains(query, q => q.Name == "Eduarda");
+
+
+            var date = DateTime.Now.AddYears(-4);
+            query = _context.Users.AsQueriable().Where(u => u.Release > date).ToList();
+            Assert.True(query.Count() == 3, $"Retornaram {query.Count()} elementos.");
+            Assert.Contains(query, q => q.Name == "Eduardo");
+            Assert.Contains(query, q => q.Name == "Ricardo");
+            Assert.Contains(query, q => q.Name == "Eduarda");
+        }
+
+        [Fact(DisplayName = "Query com OrderBy")]
+        public void Query10()
+        {
+            query = _context.Users.AsQueriable().OrderBy(u => u.Name).ToList();
+            Assert.True(query.Count() == 5, $"Retornaram {query.Count()} elementos.");
+            Assert.True(query.First().Name == "Eduarda");
+            Assert.True(query.Last().Name == "Ronaldo");
         }
     }
 }

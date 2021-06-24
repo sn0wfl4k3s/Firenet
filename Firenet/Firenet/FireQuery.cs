@@ -9,37 +9,49 @@ namespace Firenet
 {
     public class FireQuery<TEntity> where TEntity : class
     {
-        private readonly EntityComparer<TEntity> _comparer;
+        private readonly IEqualityComparer<TEntity> _comparer;
         private readonly Query _sourceQuery;
 
-        public Query SourceQuery => _sourceQuery;
-
-        public IList<Query> Queries { get; set; }
+        private string _orderByPropertyName { get; set; }
+        private IList<Query> _queries { get; set; }
 
         public FireQuery(Query query)
         {
             _sourceQuery = query;
             _comparer = new EntityComparer<TEntity>();
-            Queries = new List<Query>();
+            _queries = new List<Query>();
+            _orderByPropertyName = typeof(TEntity).GetProperties().Where(p => p.PropertyType == typeof(string)).ToArray()[1].Name;
         }
 
+        public TEntity[] ToArray() => AsEnumerable().ToArray();
+        public List<TEntity> ToList() => AsEnumerable().ToList();
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
         public async Task<IEnumerable<TEntity>> ToListAsync() => await Task.FromResult(ToList());
 
-        public List<TEntity> ToList()
+        public IEnumerable<TEntity> AsEnumerable()
         {
-            return Queries
+            return _queries
+                .AsParallel()
                 .SelectMany(q => q.GetSnapshot().Select(s => s.ConvertTo<TEntity>()))
+                .AsSequential()
                 .Distinct(_comparer)
-                .ToList();
+                .OrderBy(e => e.GetType().GetProperty(_orderByPropertyName))
+                .AsEnumerable();
         }
 
-        public TEntity[] ToArray()
+
+        public FireQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> expression)
         {
-            return Queries
-                .SelectMany(q => q.GetSnapshot().Select(s => s.ConvertTo<TEntity>()))
-                .Distinct(_comparer)
-                .ToArray();
+            _orderByPropertyName = (expression.Body as MemberExpression).Member.Name;
+
+            if (_queries.Count is 0)
+            {
+                _queries.Add(_sourceQuery);
+            }
+
+            _queries = _queries.Select(q => q.OrderBy(_orderByPropertyName)).ToList();
+
+            return this;
         }
 
         public FireQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression)
@@ -70,14 +82,13 @@ namespace Firenet
             }
 
             var entryExpression = expression.CanReduce ? expression.Body.Reduce() : expression.Body;
-
             var expressionGroups = MapQueries(entryExpression);
 
             foreach (var expressions in expressionGroups)
             {
-                var quering = SourceQuery;
-                expressions.ForEach(exp => quering = quering.AddQuery<TEntity>(exp));
-                Queries.Add(quering);
+                var quering = _sourceQuery;
+                expressions.ForEach(express => quering = quering.AddQuery<TEntity>(express));
+                _queries.Add(quering);
             }
 
             return this;

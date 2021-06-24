@@ -45,7 +45,7 @@ namespace Firenet
                 if (stringExpression.Contains(".StartsWith("))
                 {
                     stringValue = Regex.Replace(stringExpression, @".*?StartsWith\(\""|\""\)", string.Empty);
-                    
+
                     return query
                         .WhereLessThanOrEqualTo(property.Name, stringValue + '~')
                         .WhereGreaterThanOrEqualTo(property.Name, stringValue);
@@ -79,7 +79,7 @@ namespace Firenet
 
             if (typeof(DateTime).Equals(property.PropertyType) || typeof(DateTime?).Equals(property.PropertyType))
             {
-                DateTime datetimeValue = (DateTime) Expression.Lambda(value).Compile().DynamicInvoke();
+                DateTime datetimeValue = (DateTime)Expression.Lambda(value).Compile().DynamicInvoke();
 
                 datetimeValue = DateTime.SpecifyKind(datetimeValue, DateTimeKind.Utc);
 
