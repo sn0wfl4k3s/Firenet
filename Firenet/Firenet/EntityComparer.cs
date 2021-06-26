@@ -8,7 +8,7 @@ namespace Firenet
     {
         public bool Equals(TEntity x, TEntity y)
         {
-            return JsonConvert.SerializeObject(x).Equals(JsonConvert.SerializeObject(y));
+            return x.GetHashCode().Equals(y.GetHashCode());
         }
 
         public int GetHashCode([DisallowNull] TEntity obj)
