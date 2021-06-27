@@ -105,35 +105,18 @@ namespace Firenet
         }
 
         public virtual IEnumerable<TEntity> AddRange(IEnumerable<TEntity> entities, Transaction transaction = null)
-        {
-            return entities.AsParallel().Select(e => Add(e, transaction)).ToList();
-        }
+            => entities.AsParallel().Select(e => Add(e, transaction)).ToList();
 
         public virtual IEnumerable<TEntity> UpdateRange(IDictionary<string, TEntity> idsAndEntities, Transaction transaction = null)
-        {
-            return idsAndEntities.AsParallel().Select(e => Update(e.Key, e.Value, transaction)).ToList();
-        }
+            => idsAndEntities.AsParallel().Select(e => Update(e.Key, e.Value, transaction)).ToList();
 
         public virtual void DeleteRange(IEnumerable<string> ids, Transaction transaction = null)
-        {
-            ids.AsParallel().ForAll(id => Delete(id, transaction));
-        }
+            => ids.AsParallel().ForAll(id => Delete(id, transaction));
         #endregion
 
         #region CommandAsync Implementation
         public virtual async Task<TEntity> AddAsync(TEntity entity, Transaction transaction = null)
-        {
-            entity = entity.SetUtcDatetimes();
-            CollectionReference colRef = _database.Collection(_collectionName);
-            if (transaction is not null)
-            {
-                DocumentReference docTransaction = colRef.Document();
-                transaction.Create(docTransaction, entity);
-                return entity;
-            }
-            DocumentReference doc = await colRef.AddAsync(entity);
-            return doc.GetSnapshot().ConvertTo<TEntity>();
-        }
+            => await Task.FromResult(Add(entity, transaction));
 
         public virtual async Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities, Transaction transaction = null)
         {
@@ -143,29 +126,7 @@ namespace Firenet
         }
 
         public virtual async Task<TEntity> UpdateAsync(string id, TEntity entity, Transaction transaction = null)
-        {
-            entity = entity.SetUtcDatetimes();
-            DocumentReference docReference = _database.Collection(_collectionName).Document(id);
-            if (transaction is not null)
-            {
-                TEntity entityBefore = docReference.GetSnapshot().ConvertTo<TEntity>();
-                ImmutableArray<(string name, object value)> propertiesBefore = entityBefore
-                    .GetType()
-                    .GetRuntimeProperties()
-                    .Select(p => (name: p.Name, value: p.GetValue(entityBefore)))
-                    .ToImmutableArray();
-                IDictionary<string, object> propertiesToChange = entity
-                    .GetType()
-                    .GetRuntimeProperties()
-                    .Select(p => (name: p.Name, value: p.GetValue(entity)))
-                    .Where(t => !propertiesBefore.Contains(t))
-                    .ToDictionary(d => d.name, d => d.value);
-                transaction.Update(docReference, propertiesToChange);
-                return entity;
-            }
-            await docReference.SetAsync(entity, SetOptions.MergeAll);
-            return entity;
-        }
+            => await Task.FromResult(Update(id,entity, transaction));
 
         public virtual async Task<IEnumerable<TEntity>> UpdateRangeAsync(IDictionary<string, TEntity> entities, Transaction transaction = null)
         {
@@ -174,16 +135,9 @@ namespace Firenet
             return updateTasks.AsParallel().Select(t => t.GetAwaiter().GetResult());
         }
 
-        public virtual async Task DeleteAsync(string id, Transaction transaction = null)
+        public virtual async Task DeleteAsync(string documentId, Transaction transaction = null)
         {
-            DocumentReference recordRef = _database.Collection(_collectionName).Document(id);
-            if (transaction is not null)
-            {
-                transaction.Delete(recordRef);
-                await Task.CompletedTask;
-                return;
-            }
-            await recordRef.DeleteAsync();
+            Delete(documentId, transaction);
             await Task.CompletedTask;
         }
 

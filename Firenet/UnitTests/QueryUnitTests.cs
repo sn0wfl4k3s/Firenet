@@ -142,7 +142,7 @@ namespace UnitTests
             Assert.Contains(query, q => q.Name == "Ronaldo");
             Assert.Contains(query, q => q.Name == "Fabiana");
 
-            query = _context.Users.AsQueriable().Where(u => u.Points > 30 && !u.IsAdmin).OrderBy(u => u.Name).ToList();
+            query = _context.Users.AsQueriable().Where(u => u.Points > 30).OrderBy(u => u.Points).ToList();
             Assert.True(query.Count() == 2, $"Retornaram {query.Count()} elementos.");
             Assert.Contains(query, q => q.Name == "Ronaldo");
             Assert.Contains(query, q => q.Name == "Fabiana");
@@ -196,6 +196,26 @@ namespace UnitTests
             query = _context.Users.AsQueriable().OrderByDescending(u => u.Release).ToList();
             Assert.True(query.First().Name == "Ricardo");
             Assert.True(query.Last().Name == "Fabiana");
+        }
+
+        [Fact(DisplayName = "Query com First")]
+        public void Query12()
+        {
+            var user = _context.Users.AsQueriable().First(u => u.Name == "Eduardo");
+            Assert.True(user.Name == "Eduardo");
+
+            user = _context.Users.AsQueriable().First(u => u.Name.StartsWith("Edu"));
+            Assert.True(user.Name == "Eduardo");
+        }
+
+        [Fact(DisplayName = "Query com Last")]
+        public void Query13()
+        {
+            var user = _context.Users.AsQueriable().Last();
+            Assert.True(user.Name == "Fabiana");
+
+            user = _context.Users.AsQueriable().Last(u => u.Name.StartsWith("Edu"));
+            Assert.True(user.Name == "Eduarda");
         }
     }
 }

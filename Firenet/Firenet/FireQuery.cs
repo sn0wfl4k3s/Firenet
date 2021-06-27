@@ -13,8 +13,8 @@ namespace Firenet
         private readonly Query _sourceQuery;
 
         private HashSet<Query> _queries;
-        private string _orderByPropertyName;
-        private string _orderByDescendingPropertyName;
+        private string _orderByName;
+        private string _orderByDescendingName;
 
         public FireQuery(Query query)
         {
@@ -23,8 +23,15 @@ namespace Firenet
             _queries = new HashSet<Query>();
         }
 
+        public TEntity First() => ToArray().First();
+        public TEntity First(Expression<Func<TEntity, bool>> expression) => Where(expression).ToArray().First();
+        
+        public TEntity Last() => ToArray().Last();
+        public TEntity Last(Expression<Func<TEntity, bool>> expression) => Where(expression).ToArray().Last();
+        
         public TEntity[] ToArray() => AsEnumerable().ToArray();
         public List<TEntity> ToList() => AsEnumerable().ToList();
+        
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
         public async Task<IEnumerable<TEntity>> ToListAsync() => await Task.FromResult(ToList());
 
@@ -38,62 +45,63 @@ namespace Firenet
                 .AsParallel()
                 .SelectMany(q => q.GetSnapshot().Select(s => (created: s.CreateTime, entity: s.ConvertTo<TEntity>())));
 
+            var results = (!string.IsNullOrEmpty(_orderByName), !string.IsNullOrEmpty(_orderByDescendingName)) switch
+            {
+                (true, false) => queries
+                    .AsSequential()
+                    .Select(t => t.entity)
+                    .Distinct(_comparer)
+                    .OrderBy(e => e.GetType().GetProperty(_orderByName)),
+                (false, true) => queries
+                    .AsSequential()
+                    .Select(t => t.entity)
+                    .Distinct(_comparer)
+                    .OrderByDescending(e => e.GetType().GetProperty(_orderByDescendingName)),
+                (false, false) => queries
+                    .AsSequential()
+                    .OrderBy(t => t.created)
+                    .Select(t => t.entity)
+                    .Distinct(_comparer),
+                _ => throw new InvalidOperationException()
+            };
+
+            _orderByName = string.Empty;
+            _orderByDescendingName = string.Empty;
             _queries.Clear();
 
-            if (!string.IsNullOrEmpty(_orderByPropertyName))
-            {
-                return queries
-                    .AsSequential()
-                    .Select(t => t.entity)
-                    .Distinct(_comparer)
-                    .OrderBy(e => e.GetType().GetProperty(_orderByPropertyName));
-            }
-
-            if (!string.IsNullOrEmpty(_orderByDescendingPropertyName))
-            {
-                return queries
-                    .AsSequential()
-                    .Select(t => t.entity)
-                    .Distinct(_comparer)
-                    .OrderByDescending(e => e.GetType().GetProperty(_orderByDescendingPropertyName));
-            }
-
-            return queries
-                .AsSequential()
-                .OrderBy(t => t.created)
-                .Select(t => t.entity)
-                .Distinct(_comparer);
+            return results.AsEnumerable();
         }
 
 
         public FireQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> expression)
         {
-            _orderByDescendingPropertyName = string.Empty;
-            _orderByPropertyName = typeof(TEntity)
+            _orderByDescendingName = string.Empty;
+            _orderByName = typeof(TEntity)
                 .GetProperties()
                 .FirstOrDefault(p => expression.Body.ToString().Contains(p.Name))
                 .Name;
 
-            if (_queries.Count is 0)
-                _queries.Add(_sourceQuery);
-
-            _queries = _queries.Select(q => q.OrderBy(_orderByPropertyName)).ToHashSet();
+            AddQueryToTheQueries(q => q.OrderBy(_orderByName));
 
             return this;
         }
 
         public FireQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> expression)
         {
-            _orderByPropertyName = string.Empty;
-            _orderByDescendingPropertyName = typeof(TEntity)
+            _orderByName = string.Empty;
+            _orderByDescendingName = typeof(TEntity)
                 .GetProperties()
                 .FirstOrDefault(p => expression.Body.ToString().Contains(p.Name))
                 .Name;
 
-            if (_queries.Count is 0)
-                _queries.Add(_sourceQuery);
+            AddQueryToTheQueries(q => q.OrderByDescending(_orderByDescendingName));
 
-            _queries = _queries.Select(q => q.OrderByDescending(_orderByDescendingPropertyName)).ToHashSet();
+            return this;
+        }
+
+        public FireQuery<TEntity> Take (int count)
+        {
+            AddQueryToTheQueries(q => q.Limit(count));
 
             return this;
         }
@@ -122,6 +130,14 @@ namespace Firenet
                     => MapQueries(binary.Left).SelectMany(l => MapQueries(binary.Right).Select(r => r.Concat(l))),
                 _ => new Expression[][] { new[] { expression } }
             };
+        }
+
+        private void AddQueryToTheQueries(Func<Query, Query> function)
+        {
+            if (_queries.Count is 0)
+                _queries.Add(_sourceQuery);
+
+            _queries = _queries.Select(function).ToHashSet();
         }
     }
 }

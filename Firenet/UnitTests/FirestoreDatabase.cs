@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnitTests.Models;
 
 namespace UnitTests
@@ -31,7 +32,11 @@ namespace UnitTests
                 new User { Name = "Fabiana", Email = "fabiana@gmail.com", IsAdmin = false, Points = 50, Release = DateTime.Now.AddYears(-5) },
             };
 
-            Context.Users.AddRange(users);
+            foreach (var userToSave in users)
+            {
+                Context.Users.Add(userToSave);
+            }
+
         }
 
         public void Dispose()

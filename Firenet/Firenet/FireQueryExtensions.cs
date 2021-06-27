@@ -12,8 +12,8 @@ namespace Firenet
         public static Query AddQuery<TEntity>(this Query query, Expression expression)
         {
             PropertyInfo prop = typeof(TEntity)
-                .GetRuntimeProperties()
-                .FirstOrDefault(p => expression.ToString().Contains(p.Name, StringComparison.InvariantCultureIgnoreCase));
+                .GetProperties()
+                .First(p => expression.ToString().Contains(p.Name, StringComparison.InvariantCultureIgnoreCase));
 
             if (expression.ToString().Contains(".StartsWith("))
             {
