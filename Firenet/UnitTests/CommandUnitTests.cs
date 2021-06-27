@@ -12,10 +12,9 @@ namespace UnitTests
         public CommandUnitTests(FirestoreDatabase firestore)
         {
             _context = firestore.Context;
-            //firestore.LoadAllData();
         }
 
-        //[Fact(Skip = "funcionando")]
+        [Fact]
         public async Task Delete_all()
         {
             var users = await _context.Users.ToListAsync();
@@ -24,10 +23,10 @@ namespace UnitTests
             Assert.True(users.Count() is 0);
         }
 
-        //[Theory(Skip = "funcionando")]
-        //[InlineData("Fulano", "fulano@gmail.com")]
-        //[InlineData("Maria", "mariazinha@gmail.com")]
-        //[InlineData("João", "Joãozin@gmail.com")]
+        [Theory]
+        [InlineData("Fulano", "fulano@gmail.com")]
+        [InlineData("Maria", "mariazinha@gmail.com")]
+        [InlineData("João", "Joãozin@gmail.com")]
         public async Task Add_users(string name, string email)
         {
             var user = new User { Name = name, Email = email };
@@ -39,10 +38,10 @@ namespace UnitTests
             await _context.Users.DeleteAsync(added.Id);
         }
 
-        //[Theory(Skip = "funcionando")]
-        //[InlineData("Joãozin@gmail.com", "jhon@gmail.com")]
-        //[InlineData("fulano@gmail.com", "fulano2@gmail.com")]
-        //[InlineData("mariazinha@gmail.com", "mariazinha_nçva@gmail.com")]
+        [Theory]
+        [InlineData("Joãozin@gmail.com", "jhon@gmail.com")]
+        [InlineData("fulano@gmail.com", "fulano2@gmail.com")]
+        [InlineData("mariazinha@gmail.com", "mariazinha_nçva@gmail.com")]
         public async Task Update_users(string emailOld, string emailNew)
         {
             var user = new User { Name = "Random", Email = emailOld };

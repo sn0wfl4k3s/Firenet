@@ -33,7 +33,7 @@ namespace Firenet
         public List<TEntity> ToList() => AsEnumerable().ToList();
         
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
-        public async Task<IEnumerable<TEntity>> ToListAsync() => await Task.FromResult(ToList());
+        public async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
 
         public IEnumerable<TEntity> AsEnumerable()
         {
