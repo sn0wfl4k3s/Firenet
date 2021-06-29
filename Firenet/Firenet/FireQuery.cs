@@ -23,15 +23,15 @@ namespace Firenet
             _queries = new HashSet<Query>();
         }
 
-        public TEntity First() => ToArray().First();
-        public TEntity First(Expression<Func<TEntity, bool>> expression) => Where(expression).ToArray().First();
-        
+        public TEntity First() => Take(1).ToArray().First();
+        public TEntity First(Expression<Func<TEntity, bool>> expression) => Take(1).Where(expression).ToArray().First();
+
         public TEntity Last() => ToArray().Last();
         public TEntity Last(Expression<Func<TEntity, bool>> expression) => Where(expression).ToArray().Last();
-        
+
         public TEntity[] ToArray() => AsEnumerable().ToArray();
         public List<TEntity> ToList() => AsEnumerable().ToList();
-        
+
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
         public async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
 
@@ -99,9 +99,16 @@ namespace Firenet
             return this;
         }
 
-        public FireQuery<TEntity> Take (int count)
+        public FireQuery<TEntity> Take(int count)
         {
             AddQueryToTheQueries(q => q.Limit(count));
+
+            return this;
+        }
+
+        public FireQuery<TEntity> TakeLast(int count)
+        {
+            AddQueryToTheQueries(q => q.LimitToLast(count));
 
             return this;
         }
@@ -124,9 +131,9 @@ namespace Firenet
 
             return (expression.NodeType, binary) switch
             {
-                (ExpressionType.Or or ExpressionType.OrElse or ExpressionType.OrAssign, not null) 
+                (ExpressionType.Or or ExpressionType.OrElse or ExpressionType.OrAssign, not null)
                     => MapQueries(binary.Left).Concat(MapQueries(binary.Right)),
-                (ExpressionType.And or ExpressionType.AndAlso or ExpressionType.AndAssign, not null) 
+                (ExpressionType.And or ExpressionType.AndAlso or ExpressionType.AndAssign, not null)
                     => MapQueries(binary.Left).SelectMany(l => MapQueries(binary.Right).Select(r => r.Concat(l))),
                 _ => new Expression[][] { new[] { expression } }
             };

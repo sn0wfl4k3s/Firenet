@@ -105,7 +105,7 @@ namespace Firenet
         }
 
         public virtual IEnumerable<TEntity> AddRange(IEnumerable<TEntity> entities, Transaction transaction = null)
-            => entities.AsParallel().Select(e => Add(e, transaction)).ToList();
+            => entities.Select(e => Add(e, transaction)).ToList();
 
         public virtual IEnumerable<TEntity> UpdateRange(IDictionary<string, TEntity> idsAndEntities, Transaction transaction = null)
             => idsAndEntities.AsParallel().Select(e => Update(e.Key, e.Value, transaction)).ToList();
