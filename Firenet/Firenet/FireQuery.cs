@@ -13,102 +13,96 @@ namespace Firenet
         private readonly Query _sourceQuery;
 
         private HashSet<Query> _queries;
-        private string _orderByName;
-        private string _orderByDescendingName;
+        private FireQueryOptions _options;
 
         public FireQuery(Query query)
         {
             _sourceQuery = query;
-            _comparer = new EntityComparer<TEntity>();
             _queries = new HashSet<Query>();
+            _comparer = new EntityComparer<TEntity>();
+            _options = new FireQueryOptions();
         }
 
-        public TEntity First() => Take(1).ToArray().First();
-        public TEntity First(Expression<Func<TEntity, bool>> expression) => Take(1).Where(expression).ToArray().First();
+        public bool Any(Expression<Func<TEntity, bool>> expression) => Where(expression).ToEnumerable().Any(expression.Compile());
+        public TEntity Last(Expression<Func<TEntity, bool>> expression) => Where(expression).ToEnumerable().Last();
+        public TEntity First(Expression<Func<TEntity, bool>> expression) => Where(expression).ToEnumerable().First();
+        public TEntity[] ToArray() => ToEnumerable().ToArray();
+        public List<TEntity> ToList() => ToEnumerable().ToList();
 
-        public TEntity Last() => ToArray().Last();
-        public TEntity Last(Expression<Func<TEntity, bool>> expression) => Where(expression).ToArray().Last();
-
-        public TEntity[] ToArray() => AsEnumerable().ToArray();
-        public List<TEntity> ToList() => AsEnumerable().ToList();
-
+        public async Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Last(expression));
+        public async Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(First(expression));
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
         public async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
+        public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Any(expression));
 
-        public IEnumerable<TEntity> AsEnumerable()
+        public IEnumerable<TEntity> ToEnumerable()
         {
             if (_queries.Count is 0)
                 _queries.Add(_sourceQuery);
 
-            var queries = _queries
-                .ToArray()
-                .AsParallel()
-                .SelectMany(q => q.GetSnapshot().Select(s => (created: s.CreateTime, entity: s.ConvertTo<TEntity>())));
+            var options = _options.Clone() as FireQueryOptions;
 
-            var results = (!string.IsNullOrEmpty(_orderByName), !string.IsNullOrEmpty(_orderByDescendingName)) switch
+            var results = _options switch
             {
-                (true, false) => queries
+                { OrderByName: not null, OrderByDescendingName: null } => _queries
+                    .ToArray()
+                    .AsParallel()
+                    .SelectMany(q => q.GetSnapshot().Select(s => s.ConvertTo<TEntity>()))
                     .AsSequential()
-                    .Select(t => t.entity)
                     .Distinct(_comparer)
-                    .OrderBy(e => e.GetType().GetProperty(_orderByName)),
-                (false, true) => queries
+                    .OrderBy(e => e.GetType().GetProperty(options.OrderByName).Name),
+                { OrderByName: null, OrderByDescendingName: not null } => _queries
+                    .ToArray()
+                    .AsParallel()
+                    .SelectMany(q => q.GetSnapshot().Select(s => s.ConvertTo<TEntity>()))
                     .AsSequential()
-                    .Select(t => t.entity)
                     .Distinct(_comparer)
-                    .OrderByDescending(e => e.GetType().GetProperty(_orderByDescendingName)),
-                (false, false) => queries
+                    .OrderByDescending(e => e.GetType().GetProperty(options.OrderByDescendingName)),
+                { OrderByName: not null, OrderByDescendingName: not null } => _queries
+                    .ToArray()
+                    .AsParallel()
+                    .SelectMany(q => q.GetSnapshot().Select(s => s.ConvertTo<TEntity>()))
+                    .AsSequential()
+                    .Distinct(_comparer)
+                    .OrderBy(e => e.GetType().GetProperty(options.OrderByName))
+                    .OrderByDescending(e => e.GetType().GetProperty(options.OrderByDescendingName)),
+                _ => _queries
+                    .ToArray()
+                    .AsParallel()
+                    .SelectMany(q => q.GetSnapshot().Select(s => (created: s.CreateTime, entity: s.ConvertTo<TEntity>())))
                     .AsSequential()
                     .OrderBy(t => t.created)
                     .Select(t => t.entity)
-                    .Distinct(_comparer),
-                _ => throw new InvalidOperationException()
+                    .Distinct(_comparer)
             };
 
-            _orderByName = string.Empty;
-            _orderByDescendingName = string.Empty;
             _queries.Clear();
+            _options = new FireQueryOptions();
 
-            return results.AsEnumerable();
+            return results;
         }
 
 
         public FireQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> expression)
         {
-            _orderByDescendingName = string.Empty;
-            _orderByName = typeof(TEntity)
+            _options.OrderByName = typeof(TEntity)
                 .GetProperties()
                 .FirstOrDefault(p => expression.Body.ToString().Contains(p.Name))
                 .Name;
 
-            AddQueryToTheQueries(q => q.OrderBy(_orderByName));
+            AddQueryToTheQueries(q => q.OrderBy(_options.OrderByName));
 
             return this;
         }
 
         public FireQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> expression)
         {
-            _orderByName = string.Empty;
-            _orderByDescendingName = typeof(TEntity)
+            _options.OrderByDescendingName = typeof(TEntity)
                 .GetProperties()
                 .FirstOrDefault(p => expression.Body.ToString().Contains(p.Name))
                 .Name;
 
-            AddQueryToTheQueries(q => q.OrderByDescending(_orderByDescendingName));
-
-            return this;
-        }
-
-        public FireQuery<TEntity> Take(int count)
-        {
-            AddQueryToTheQueries(q => q.Limit(count));
-
-            return this;
-        }
-
-        public FireQuery<TEntity> TakeLast(int count)
-        {
-            AddQueryToTheQueries(q => q.LimitToLast(count));
+            AddQueryToTheQueries(q => q.OrderByDescending(_options.OrderByDescendingName));
 
             return this;
         }

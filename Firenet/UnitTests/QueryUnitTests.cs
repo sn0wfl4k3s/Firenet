@@ -211,11 +211,34 @@ namespace UnitTests
         [Fact(DisplayName = "Query com Last")]
         public void Query13()
         {
-            var user = _context.Users.AsQueriable().Last();
-            Assert.True(user.Name == "Fabiana");
-
-            user = _context.Users.AsQueriable().Last(u => u.Name.StartsWith("Edu"));
+            var user = _context.Users.AsQueriable().Last(u => u.Name.StartsWith("Edu"));
             Assert.True(user.Name == "Eduarda");
+        }
+
+        [Fact(DisplayName = "Query com Take")]
+        public void Query14()
+        {
+            var users = _context.Users.AsQueriable().ToArray();
+            Assert.True(users.Length == 5, $"Retornaram {users.Length} elementos.");
+
+            var usersArray = _context.Users.AsQueriable().ToEnumerable().Take(3).ToArray();
+            Assert.True(usersArray.Length == 3, $"Retornaram {usersArray.Length} elementos.");
+            Assert.True(usersArray[0].Name == users[0].Name);
+            Assert.True(usersArray[1].Name == users[1].Name);
+            Assert.True(usersArray[2].Name == users[2].Name);
+        }
+
+        [Fact(DisplayName = "Query com Any")]
+        public void Query15()
+        {
+            bool tem = _context.Users.AsQueriable().Any(u => u.Name == "Eduardo");
+            Assert.True(tem);
+
+            tem = _context.Users.AsQueriable().Any(u => u.Email == "ronaldo@gmail.com");
+            Assert.True(tem);
+
+            tem = _context.Users.AsQueriable().Any(u => u.Email == "ronaldo2@gmail.com");
+            Assert.True(!tem);
         }
     }
 }
