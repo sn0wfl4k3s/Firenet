@@ -24,12 +24,16 @@ namespace Firenet
         }
 
         #region Queries Implementation
+        public int Count => _database.Collection(_collectionName).GetSnapshot().Count;
+
+        public string ProjectId => _database.ProjectId;
+
         public virtual Query Query()
         {
             return _database.Collection(_collectionName);
         }
 
-        public virtual FireQuery<TEntity> AsQueriable()
+        public virtual IFireQuery<TEntity> AsQueriable()
         {
             return new FireQuery<TEntity>(_database.Collection(_collectionName));
         }

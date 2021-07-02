@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Firenet
 {
-    public sealed class FireQuery<TEntity> where TEntity : class
+    internal sealed class FireQuery<TEntity> : IFireQuery<TEntity> where TEntity : class
     {
         private readonly IEqualityComparer<TEntity> _comparer;
         private readonly Query _sourceQuery;
@@ -23,17 +23,18 @@ namespace Firenet
             _options = new FireQueryOptions();
         }
 
+        public TEntity[] ToArray() => ToEnumerable().ToArray();
+        public List<TEntity> ToList() => ToEnumerable().ToList();
         public bool Any(Expression<Func<TEntity, bool>> expression) => Where(expression).ToEnumerable().Any(expression.Compile());
         public TEntity Last(Expression<Func<TEntity, bool>> expression) => Where(expression).ToEnumerable().Last();
         public TEntity First(Expression<Func<TEntity, bool>> expression) => Where(expression).ToEnumerable().First();
-        public TEntity[] ToArray() => ToEnumerable().ToArray();
-        public List<TEntity> ToList() => ToEnumerable().ToList();
 
-        public async Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Last(expression));
-        public async Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(First(expression));
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
         public async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
         public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Any(expression));
+        public async Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Last(expression));
+        public async Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(First(expression));
+
 
         public IEnumerable<TEntity> ToEnumerable()
         {
@@ -54,14 +55,14 @@ namespace Firenet
                 { OrderByName: null, OrderByDescendingName: not null } => _queries
                     .ToArray()
                     .AsParallel()
-                    .SelectMany(q => q.GetSnapshot().Select(s => s.ConvertTo<TEntity>()))
+                    .SelectMany(q => q.GetSnapshot().Documents.Select(s => s.ConvertTo<TEntity>()))
                     .AsSequential()
                     .Distinct(_comparer)
                     .OrderByDescending(e => e.GetType().GetProperty(options.OrderByDescendingName)),
                 { OrderByName: not null, OrderByDescendingName: not null } => _queries
                     .ToArray()
                     .AsParallel()
-                    .SelectMany(q => q.GetSnapshot().Select(s => s.ConvertTo<TEntity>()))
+                    .SelectMany(q => q.GetSnapshot().Documents.Select(s => s.ConvertTo<TEntity>()))
                     .AsSequential()
                     .Distinct(_comparer)
                     .OrderBy(e => e.GetType().GetProperty(options.OrderByName))
@@ -69,7 +70,7 @@ namespace Firenet
                 _ => _queries
                     .ToArray()
                     .AsParallel()
-                    .SelectMany(q => q.GetSnapshot().Select(s => (created: s.CreateTime, entity: s.ConvertTo<TEntity>())))
+                    .SelectMany(q => q.GetSnapshot().Documents.Select(s => (created: s.CreateTime, entity: s.ConvertTo<TEntity>())))
                     .AsSequential()
                     .OrderBy(t => t.created)
                     .Select(t => t.entity)
@@ -82,8 +83,7 @@ namespace Firenet
             return results;
         }
 
-
-        public FireQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> expression)
+        public IFireQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> expression)
         {
             _options.OrderByName = typeof(TEntity)
                 .GetProperties()
@@ -95,7 +95,7 @@ namespace Firenet
             return this;
         }
 
-        public FireQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> expression)
+        public IFireQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> expression)
         {
             _options.OrderByDescendingName = typeof(TEntity)
                 .GetProperties()
@@ -107,7 +107,7 @@ namespace Firenet
             return this;
         }
 
-        public FireQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression)
+        public IFireQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression)
         {
             Expression entryExpression = expression.CanReduce ? expression.Body.Reduce() : expression.Body;
 

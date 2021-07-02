@@ -10,9 +10,18 @@ namespace Firenet
         /// Contruct a query for your search with functions and expressions. 
         /// It's limited and experimental yet and be carefull into use this.
         /// </summary>
-        /// <
         /// <returns></returns>
-        FireQuery<TEntity> AsQueriable();
+        IFireQuery<TEntity> AsQueriable();
+
+        /// <summary>
+        /// Return the number of documents in collection.
+        /// </summary>
+        int Count { get; }
+
+        /// <summary>
+        /// Return the project Id.
+        /// </summary>
+        string ProjectId { get; }
 
         /// <summary>
         /// Contruct a query for your search.
