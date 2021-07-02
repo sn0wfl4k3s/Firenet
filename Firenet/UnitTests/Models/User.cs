@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using System;
 
 namespace UnitTests.Models
 {
@@ -13,5 +14,17 @@ namespace UnitTests.Models
 
         [FirestoreProperty]
         public string Email { get; set; }
+
+        [FirestoreProperty]
+        public bool IsAdmin { get; set; }
+
+        [FirestoreProperty]
+        public int Points { get; set; }
+
+        [FirestoreProperty]
+        public DateTime? Release { get; set; }
+
+        [FirestoreDocumentCreateTimestamp]
+        public DateTime Created { get; set; }
     }
 }

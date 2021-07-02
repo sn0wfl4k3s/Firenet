@@ -1,5 +1,3 @@
-using Firenet;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using UnitTests.Models;
@@ -7,13 +5,13 @@ using Xunit;
 
 namespace UnitTests
 {
-    public class UnitTests : IDisposable
+    public class CommandUnitTests : IClassFixture<FirestoreDatabase>
     {
         private readonly AppDbContext _context;
 
-        public UnitTests()
+        public CommandUnitTests(FirestoreDatabase firestore)
         {
-            _context = FireContextBuilder<AppDbContext>.Build();
+            _context = firestore.Context;
         }
 
         [Fact]
@@ -59,7 +57,5 @@ namespace UnitTests
             Assert.Equal(updated.Email, emailNew);
             await _context.Users.DeleteAsync(review.Id);
         }
-
-        public void Dispose() => _context.Dispose();
     }
 }

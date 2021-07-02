@@ -30,6 +30,10 @@ namespace Firenet
 
         private static FirestoreDb LoadFirestoreDb(string jsonCredentialsPath)
         {
+            if (string.IsNullOrEmpty(jsonCredentialsPath))
+                throw new ArgumentException(nameof(JsonCredentials));
+            if (!File.Exists(jsonCredentialsPath))
+                throw new FileNotFoundException(nameof(JsonCredentials));
             var jsonObject = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(jsonCredentialsPath));
             var builder = new FirestoreDbBuilder { ProjectId = jsonObject.ProjectId, CredentialsPath = jsonCredentialsPath };
             return builder.Build();

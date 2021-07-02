@@ -7,6 +7,23 @@ namespace Firenet
     public interface IQuery<TEntity> where TEntity : class
     {
         /// <summary>
+        /// Contruct a query for your search with functions and expressions. 
+        /// It's limited and experimental yet and be carefull into use this.
+        /// </summary>
+        /// <returns></returns>
+        IFireQuery<TEntity> AsQueriable();
+
+        /// <summary>
+        /// Return the number of documents in collection.
+        /// </summary>
+        int Count { get; }
+
+        /// <summary>
+        /// Return the project Id.
+        /// </summary>
+        string ProjectId { get; }
+
+        /// <summary>
         /// Contruct a query for your search.
         /// </summary>
         /// <returns></returns>
@@ -27,15 +44,33 @@ namespace Firenet
         Task<TEntity> FindAsync(string documentId);
 
         /// <summary>
-        /// Return all elements saved on the documents.
+        /// Return all elements saved on the documents as enumerable of <typeparamref name="TEntity"/>.
         /// </summary>
         /// <returns></returns>
-        IEnumerable<TEntity> ToList();
+        IEnumerable<TEntity> ToEnumerable();
 
         /// <summary>
-        /// Return all elements saved on the documents asynchronously.
+        /// Return all elements saved on the documents as a list of <typeparamref name="TEntity"/>.
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<TEntity>> ToListAsync();
+        List<TEntity> ToList();
+
+        /// <summary>
+        /// Return all elements saved on the documents as a list of <typeparamref name="TEntity"/> asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        Task<List<TEntity>> ToListAsync();
+
+        /// <summary>
+        /// Return all elements saved on the documents as a array of <typeparamref name="TEntity"/>.
+        /// </summary>
+        /// <returns></returns>
+        TEntity[] ToArray();
+
+        /// <summary>
+        /// Return all elements saved on the documents as a array of <typeparamref name="TEntity"/> asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        Task<TEntity[]> ToArrayAsync();
     }
 }
