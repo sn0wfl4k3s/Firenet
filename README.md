@@ -18,7 +18,7 @@ Download by dotnet cli:
 Put the data annotations in the class model and properties:  
 ![image](https://user-images.githubusercontent.com/30809620/120728408-3a39f900-c4b3-11eb-93c9-05eb8607b59d.png)
 
-Create a class the implement 'FireContext', and write the jsonCredential with the path and create the fireCollections that represents the models that you want store:  
+Create a class that implement 'FireContext' and write the jsonCredential with the path and create the fireCollections that represents the models that you want store:  
 ![image](https://user-images.githubusercontent.com/30809620/120728708-e4b21c00-c4b3-11eb-812a-06943586914d.png)  
 
 You can put data annotation 'CollectionName' for informate the name of collection. If it doesn't have collection name data annotation, the name of collection will be the name of object IFireCollection ('Users' in this example).  
@@ -30,4 +30,3 @@ Add on startup configureServices:
 
 Or in console application, instance:  
 ![image](https://user-images.githubusercontent.com/30809620/120727951-33f74d00-c4b2-11eb-840e-c560ebcf68b2.png) 
-
