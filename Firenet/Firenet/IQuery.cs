@@ -11,7 +11,7 @@ namespace Firenet
         /// It's limited and experimental yet and be carefull into use this.
         /// </summary>
         /// <returns></returns>
-        IFireQuery<TEntity> AsQueriable();
+        IFireQuery<TEntity> AsQueryable();
 
         /// <summary>
         /// Return the number of documents in collection.

@@ -33,7 +33,7 @@ namespace Firenet
             return _database.Collection(_collectionName);
         }
 
-        public virtual IFireQuery<TEntity> AsQueriable()
+        public virtual IFireQuery<TEntity> AsQueryable()
         {
             return new FireQuery<TEntity>(_database.Collection(_collectionName));
         }
