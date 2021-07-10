@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UnitTests.Models;
 
 namespace UnitTests
@@ -22,10 +21,10 @@ namespace UnitTests
 
             if (usersThere.Count() > 0)
                 Context.Users.DeleteRange(usersThere.Select(u => u.Id));
-
+            string[] ids = new[] { "asdad", "laosas", "qweuqw", "132456" };
             var users = new List<User>
             {
-                new User { Name = "Eduardo", Email = "eduardo@gmail.com", IsAdmin = true, Points = 10, Release = DateTime.Now.AddYears(-2) },
+                new User { Name = "Eduardo", Email = "eduardo@gmail.com", IsAdmin = true, Points = 10, Release = DateTime.Now.AddYears(-2), Ids = ids },
                 new User { Name = "Ricardo", Email = "ricardo@gmail.com", IsAdmin = false, Points = 20, Release = DateTime.Now.AddYears(-1) },
                 new User { Name = "Eduarda", Email = "eduarda@gmail.com", IsAdmin = false, Points = 30, Release = DateTime.Now.AddYears(-3) },
                 new User { Name = "Ronaldo", Email = "ronaldo@gmail.com", IsAdmin = false, Points = 40, Release = DateTime.Now.AddYears(-4) },

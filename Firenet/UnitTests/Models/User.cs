@@ -16,6 +16,9 @@ namespace UnitTests.Models
         public string Email { get; set; }
 
         [FirestoreProperty]
+        public string[] Ids { get; set; }
+
+        [FirestoreProperty]
         public bool IsAdmin { get; set; }
 
         [FirestoreProperty]

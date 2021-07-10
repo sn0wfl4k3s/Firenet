@@ -11,43 +11,41 @@ namespace Firenet
     {
         public static Query AddQuery<TEntity>(this Query query, Expression expression)
         {
-            PropertyInfo prop = typeof(TEntity)
-                .GetProperties()
-                .First(p => expression.ToString().Contains(p.Name, StringComparison.InvariantCultureIgnoreCase));
+            string[] words = Regex.Split(expression.ToString(), @"\s|\{|\}|\.|\(|\)|\""|\'", RegexOptions.Compiled);
 
-            if (expression.ToString().Contains(".StartsWith("))
+            PropertyInfo property = typeof(TEntity).GetProperties().FirstOrDefault(p => words.Contains(p.Name));
+
+            BinaryExpression binary = expression as BinaryExpression;
+
+            bool? isPropertyAtLeft = binary?.Left.ToString().Contains(property.Name);
+
+            string method = (expression as MethodCallExpression)?.Method.Name;
+
+            object value = (binary, isPropertyAtLeft, method) switch
             {
-                var valueString = Regex.Replace(expression.ToString(), @".*?StartsWith\(\""|\""\)", string.Empty);
-
-                return query
-                    .WhereLessThanOrEqualTo(prop.Name, $"{valueString}~")
-                    .WhereGreaterThanOrEqualTo(prop.Name, valueString);
-            }
-
-            object value = (expression as BinaryExpression) switch
-            {
-                var b when b is not null && !b.Left.ToString().Contains(prop.Name)
-                    => Expression.Lambda(b.Left).Compile().DynamicInvoke(),
-                var b when b is not null && !b.Right.ToString().Contains(prop.Name)
-                    => Expression.Lambda(b.Right).Compile().DynamicInvoke(),
+                (not null, false, _) => Expression.Lambda(binary.Left).Compile().DynamicInvoke(),
+                (not null, true, _) => Expression.Lambda(binary.Right).Compile().DynamicInvoke(),
+                (null, null, "Contains") => Regex.Replace(expression.ToString(), @".*?Contains\(\""|\""\)", string.Empty),
+                (null, null, "StartsWith") => Regex.Replace(expression.ToString(), @".*?StartsWith\(\""|\""\)", string.Empty),
                 _ => null
             };
 
-            if (prop.PropertyType == typeof(DateTime) || prop.PropertyType == typeof(DateTime?))
-            {
+            if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
                 value = DateTime.SpecifyKind((DateTime)value, DateTimeKind.Utc);
-            }
 
-            return (node: expression.NodeType, value) switch
+            return (expression.NodeType, value, method) switch
             {
-                (ExpressionType.Equal, _) => query.WhereEqualTo(prop.Name, value),
-                (ExpressionType.NotEqual, _) => query.WhereNotEqualTo(prop.Name, value),
-                (ExpressionType.GreaterThan, _) => query.WhereGreaterThan(prop.Name, value),
-                (ExpressionType.GreaterThanOrEqual, _) => query.WhereGreaterThanOrEqualTo(prop.Name, value),
-                (ExpressionType.LessThanOrEqual, _) => query.WhereLessThanOrEqualTo(prop.Name, value),
-                (ExpressionType.LessThan, _) => query.WhereLessThan(prop.Name, value),
-                (ExpressionType.MemberAccess, null) => query.WhereEqualTo(prop.Name, true),
-                (ExpressionType.Not, null) => query.WhereEqualTo(prop.Name, false),
+                (ExpressionType.Equal, _, _) => query.WhereEqualTo(property.Name, value),
+                (ExpressionType.NotEqual, _, _) => query.WhereNotEqualTo(property.Name, value),
+                (ExpressionType.GreaterThan, _, _) => query.WhereGreaterThan(property.Name, value),
+                (ExpressionType.GreaterThanOrEqual, _, _) => query.WhereGreaterThanOrEqualTo(property.Name, value),
+                (ExpressionType.LessThanOrEqual, _, _) => query.WhereLessThanOrEqualTo(property.Name, value),
+                (ExpressionType.LessThan, _, _) => query.WhereLessThan(property.Name, value),
+                (ExpressionType.MemberAccess, null, _) => query.WhereEqualTo(property.Name, true),
+                (ExpressionType.Not, null, _) => query.WhereEqualTo(property.Name, false),
+                (ExpressionType.Call, not null and string, "Contains") => query.WhereArrayContains(property.Name, value),
+                (ExpressionType.Call, not null and string, "StartsWith") 
+                    => query.WhereLessThanOrEqualTo(property.Name, $"{value}~").WhereGreaterThanOrEqualTo(property.Name, value),
                 _ => throw new InvalidOperationException()
             };
         }

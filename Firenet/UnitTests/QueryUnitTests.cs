@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnitTests.Models;
 using Xunit;
+using Firenet;
 
 namespace UnitTests
 {
@@ -239,6 +240,31 @@ namespace UnitTests
 
             tem = _context.Users.AsQueryable().Any(u => u.Email == "ronaldo2@gmail.com");
             Assert.True(!tem);
+        }
+
+        [Fact(DisplayName = "Query com google cloud")]
+        public void Query16()
+        {
+            var users = _context.Users
+                .Query()
+                .WhereEqualTo(nameof(User.Name), "Eduardo")
+                .WhereEqualTo(nameof(User.Points), 10)
+                .ToArray<User>();
+
+            Assert.True(users.Length == 1);
+            Assert.True(users[0].Points == 10);
+            Assert.Contains(users, u => u.Name == "Eduardo");
+        }
+
+        [Fact(DisplayName = "Query Contains")]
+        public void Query17()
+        {
+            var users = _context.Users.AsQueryable().Where(u => u.Ids.Contains("132456")).ToArray();
+            Assert.True(users.Length == 1);
+            Assert.True(users[0].Name == "Eduardo");
+
+            var user = _context.Users.AsQueryable().First(u => u.Ids.Contains("132456"));
+            Assert.True(user.Name == "Eduardo");
         }
     }
 }
