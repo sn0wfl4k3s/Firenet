@@ -23,6 +23,8 @@ namespace Firenet
             _options = new FireQueryOptions();
         }
 
+        public int Count() => ToDocuments().Length;
+        public int Count(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length;
         public TEntity[] ToArray() => ToEnumerable().ToArray();
         public List<TEntity> ToList() => ToEnumerable().ToList();
         public bool Any(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length > 0;
@@ -43,6 +45,8 @@ namespace Firenet
             return docs[^1].ConvertTo<TEntity>();
         }
 
+        public async Task<int> CountAsync() => await Task.FromResult(Count());
+        public async Task<int> CountAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Count(expression));
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
         public async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
         public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Any(expression));

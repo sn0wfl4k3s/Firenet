@@ -41,5 +41,21 @@ namespace UnitTests
             var lessThanTen = _context.Users.AsQueryable().LastOrDefault(u => u.Points < 10);
             Assert.Null(lessThanTen);
         }
+
+        [Fact(DisplayName = "Query com Count")]
+        public void Count()
+        {
+            int moreThanTen = _context.Users.AsQueryable().Where(u => u.Points > 10).Count();
+            Assert.Equal(4, moreThanTen);
+
+            moreThanTen = _context.Users.AsQueryable().Count(u => u.Points > 10);
+            Assert.Equal(4, moreThanTen);
+
+            int nameEduardoOrLessThan40 = _context.Users.AsQueryable().Where(u => u.Name == "Eduardo" || u.Points < 40).Count();
+            Assert.Equal(3, nameEduardoOrLessThan40);
+
+            nameEduardoOrLessThan40 = _context.Users.AsQueryable().Count(u => u.Name == "Eduardo" || u.Points < 40);
+            Assert.Equal(3, nameEduardoOrLessThan40);
+        }
     }
 }
