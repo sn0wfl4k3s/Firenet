@@ -21,7 +21,7 @@ namespace UnitTests
 
             if (usersThere.Length > 0)
                 Context.Users.DeleteRange(usersThere.Select(u => u.Id));
-            
+
             string[] ids = new[] { "asdad", "laosas", "qweuqw", "132456" };
 
             var users = new List<User>

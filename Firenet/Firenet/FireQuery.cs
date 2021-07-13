@@ -56,7 +56,7 @@ namespace Firenet
             if (_queries.Count is 0)
                 _queries.Add(_sourceQuery);
 
-            var documents = _queries
+            DocumentSnapshot[] documents = _queries
                 .AsParallel()
                 .SelectMany(q => q.GetSnapshot().Documents)
                 .AsSequential()
@@ -132,7 +132,7 @@ namespace Firenet
 
         private IEnumerable<IEnumerable<Expression>> MapQueries(Expression expression)
         {
-            var binary = expression as BinaryExpression;
+            BinaryExpression binary = expression as BinaryExpression;
 
             return (expression.NodeType, binary) switch
             {

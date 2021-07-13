@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using UnitTests.Models;
-using Xunit;
+﻿using Xunit;
 
 namespace UnitTests
 {
