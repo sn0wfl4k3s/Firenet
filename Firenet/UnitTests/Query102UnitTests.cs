@@ -207,6 +207,11 @@ namespace UnitTests
 
             user = _context.Users.AsQueryable().First(u => u.Name.StartsWith("Edu"));
             Assert.True(user.Name == "Eduardo");
+
+            Assert.Throws<IndexOutOfRangeException>(() =>
+            {
+                var userErro = _context.Users.AsQueryable().First(u => u.Points < 10);
+            });
         }
 
         [Fact(DisplayName = "Query com Last")]
@@ -214,6 +219,11 @@ namespace UnitTests
         {
             var user = _context.Users.AsQueryable().Last(u => u.Name.StartsWith("Edu"));
             Assert.True(user.Name == "Eduarda");
+
+            Assert.Throws<IndexOutOfRangeException>(() =>
+            {
+                var userErro = _context.Users.AsQueryable().Last(u => u.Points > 50);
+            });
         }
 
         [Fact(DisplayName = "Query com Take")]
