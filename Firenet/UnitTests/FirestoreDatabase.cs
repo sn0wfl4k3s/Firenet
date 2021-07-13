@@ -17,11 +17,13 @@ namespace UnitTests
 
         public void LoadAllData()
         {
-            var usersThere = Context.Users.ToList();
+            var usersThere = Context.Users.ToArray();
 
-            if (usersThere.Count() > 0)
+            if (usersThere.Length > 0)
                 Context.Users.DeleteRange(usersThere.Select(u => u.Id));
+            
             string[] ids = new[] { "asdad", "laosas", "qweuqw", "132456" };
+
             var users = new List<User>
             {
                 new User { Name = "Eduardo", Email = "eduardo@gmail.com", IsAdmin = true, Points = 10, Release = DateTime.Now.AddYears(-2), Ids = ids },

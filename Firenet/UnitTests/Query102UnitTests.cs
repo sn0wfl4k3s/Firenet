@@ -7,12 +7,12 @@ using Firenet;
 
 namespace UnitTests
 {
-    public class QueryUnitTests : IClassFixture<FirestoreDatabase>
+    public class Query102UnitTests : IClassFixture<FirestoreDatabase>
     {
         private readonly AppDbContext _context;
         private IEnumerable<User> query;
 
-        public QueryUnitTests(FirestoreDatabase firestore)
+        public Query102UnitTests(FirestoreDatabase firestore)
         {
             _context = firestore.Context;
             firestore.LoadAllData();

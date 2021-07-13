@@ -11,13 +11,17 @@ namespace Firenet
         List<TEntity> ToList();
         bool Any(Expression<Func<TEntity, bool>> expression);
         TEntity Last(Expression<Func<TEntity, bool>> expression);
+        TEntity LastOrDefault(Expression<Func<TEntity, bool>> expression);
         TEntity First(Expression<Func<TEntity, bool>> expression);
+        TEntity FirstOrDefault(Expression<Func<TEntity, bool>> expression);
 
         Task<TEntity[]> ToArrayAsync();
         Task<List<TEntity>> ToListAsync();
         Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression);
         Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression);
+        Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> expression);
         Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> expression);
+        Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> expression);
 
         IEnumerable<TEntity> ToEnumerable();
 

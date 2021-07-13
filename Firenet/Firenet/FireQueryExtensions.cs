@@ -44,7 +44,7 @@ namespace Firenet
                 (ExpressionType.MemberAccess, null, _) => query.WhereEqualTo(property.Name, true),
                 (ExpressionType.Not, null, _) => query.WhereEqualTo(property.Name, false),
                 (ExpressionType.Call, not null and string, "Contains") => query.WhereArrayContains(property.Name, value),
-                (ExpressionType.Call, not null and string, "StartsWith") 
+                (ExpressionType.Call, not null and string, "StartsWith")
                     => query.WhereLessThanOrEqualTo(property.Name, $"{value}~").WhereGreaterThanOrEqualTo(property.Name, value),
                 _ => throw new InvalidOperationException()
             };

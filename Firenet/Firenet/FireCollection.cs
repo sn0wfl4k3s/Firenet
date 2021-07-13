@@ -130,7 +130,7 @@ namespace Firenet
         }
 
         public virtual async Task<TEntity> UpdateAsync(string id, TEntity entity, Transaction transaction = null)
-            => await Task.FromResult(Update(id,entity, transaction));
+            => await Task.FromResult(Update(id, entity, transaction));
 
         public virtual async Task<IEnumerable<TEntity>> UpdateRangeAsync(IDictionary<string, TEntity> entities, Transaction transaction = null)
         {
