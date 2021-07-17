@@ -1,13 +1,15 @@
 ﻿using Google.Cloud.Firestore;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Firenet
 {
-    internal sealed class FireQuery<TEntity> : IFireQuery<TEntity> where TEntity : class
+    internal sealed class FireQuery<TEntity> : IFireQuery<TEntity>
     {
         private readonly IEqualityComparer<DocumentSnapshot> _documentComparer;
         private readonly Query _sourceQuery;
@@ -23,6 +25,14 @@ namespace Firenet
             _options = new FireQueryOptions();
         }
 
+        public FireQuery(Query query, HashSet<Query> queries, FireQueryOptions options)
+        {
+            _sourceQuery = query;
+            _queries = queries;
+            _options = options;
+            _documentComparer = new DocumentSnapshotComparer();
+        }
+
         public int Count() => ToDocuments().Length;
         public int Count(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length;
         public TEntity[] ToArray() => ToEnumerable().ToArray();
@@ -32,16 +42,14 @@ namespace Firenet
         public TEntity FirstOrDefault(Expression<Func<TEntity, bool>> expression)
         {
             DocumentSnapshot[] docs = Predicate(expression).ToDocuments();
-            if (docs is null or { Length: 0 })
-                return null;
+            if (docs is null or { Length: 0 }) return default;
             return docs[0].ConvertTo<TEntity>();
         }
         public TEntity Last(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments()[^1].ConvertTo<TEntity>();
         public TEntity LastOrDefault(Expression<Func<TEntity, bool>> expression)
         {
             DocumentSnapshot[] docs = Predicate(expression).ToDocuments();
-            if (docs is null or { Length: 0 })
-                return null;
+            if (docs is null or { Length: 0 }) return default;
             return docs[^1].ConvertTo<TEntity>();
         }
 
@@ -73,30 +81,70 @@ namespace Firenet
             return documents;
         }
 
-        public IEnumerable<TEntity> ToEnumerable()
+        public IFireQuery<TResult> Select<TResult>(Expression<Func<TEntity, TResult>> expression) where TResult : notnull
         {
-            IEnumerable<TEntity> doc = ToDocuments().Select(d => d.ConvertTo<TEntity>());
-
-            var options = _options.Clone() as FireQueryOptions;
-
-            IEnumerable<TEntity> results = options switch
+            var selectOptions = new SelectOptions
             {
-                { OrderByName: not null, OrderByDescendingName: null } => doc
-                    .OrderBy(e => e.GetType().GetProperty(options.OrderByName).GetValue(e, null)),
-                { OrderByName: null, OrderByDescendingName: not null } => doc
-                    .OrderByDescending(e => e.GetType().GetProperty(options.OrderByDescendingName).GetValue(e, null)),
-                { OrderByName: not null, OrderByDescendingName: not null } => doc
-                    .OrderBy(e => e.GetType().GetProperty(options.OrderByName).GetValue(e, null))
-                    .OrderByDescending(e => e.GetType().GetProperty(options.OrderByDescendingName).GetValue(e, null)),
-                _ => doc
+                Before = typeof(TEntity),
+                After = typeof(TResult),
+                Properties = typeof(TEntity)
+                    .GetProperties()
+                    .Where(p => expression.Body.ToString().Contains(p.Name))
+                    .Select(p => p.Name)
+                    .ToArray(),
+                Expression = expression
             };
-
-            _options = new FireQueryOptions();
-
-            return results;
+            
+            if (_queries.Count is 0)
+                _queries.Add(_sourceQuery);
+            _queries = _queries.Select(q => q.Select(selectOptions.Properties)).ToHashSet();
+            _options.SelectOptions = selectOptions;
+            return new FireQuery<TResult>(_sourceQuery, _queries, _options);
         }
 
-        public IFireQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> expression)
+        public IEnumerable<TEntity> ToEnumerable()
+        {
+            IEnumerable<TEntity> entities;
+            Type type = typeof(TEntity);
+            if (type.IsPrimitive || typeof(string).Equals(type) || type.IsEnum || type.IsArray)
+            {
+                PropertyInfo[] beforeProps = _options.SelectOptions.Before.GetProperties();
+                entities = ToDocuments()
+                    .Select(d => d.ToDictionary())
+                    .Select(d => d.ToDictionary(dic => beforeProps.First(p => dic.Key.Equals(p.Name)), dic => dic.Value))
+                    .Select(dic =>
+                    {
+                        object param = Activator.CreateInstance(_options.SelectOptions.Before);
+                        param
+                            .GetType()
+                            .GetProperties()
+                            .Where(p => dic.ContainsKey(p))
+                            .Select(p => (name: p.Name, value: Convert.ChangeType(dic.First(d => d.Key.Name == p.Name).Value, p.PropertyType)))
+                            .ToList()
+                            .ForEach(p => param.GetType().GetProperty(p.name).SetValue(param, p.value));
+                        object result = (_options.SelectOptions.Expression as LambdaExpression).Compile().DynamicInvoke(param);
+                        return (TEntity) result;
+                    });
+            }
+            else
+                entities = ToDocuments().Select(d => d.ConvertTo<TEntity>());
+
+            IEnumerable<TEntity> filtered = _options switch
+            {
+                { OrderByName: not null, OrderByDescendingName: null } => entities
+                    .OrderBy(e => e.GetType().GetProperty(_options.OrderByName).GetValue(e, null)),
+                { OrderByName: null, OrderByDescendingName: not null } => entities
+                    .OrderByDescending(e => e.GetType().GetProperty(_options.OrderByDescendingName).GetValue(e, null)),
+                { OrderByName: not null, OrderByDescendingName: not null } => entities
+                    .OrderBy(e => e.GetType().GetProperty(_options.OrderByName).GetValue(e, null))
+                    .OrderByDescending(e => e.GetType().GetProperty(_options.OrderByDescendingName).GetValue(e, null)),
+                _ => entities
+            };
+
+            return filtered;
+        }
+
+        public IFireQuery<TEntity> OrderBy<TKey>(Expression<Func<TEntity, TKey>> expression) where TKey : notnull
         {
             _options.OrderByName = typeof(TEntity)
                 .GetProperties()
@@ -108,7 +156,7 @@ namespace Firenet
             return this;
         }
 
-        public IFireQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> expression)
+        public IFireQuery<TEntity> OrderByDescending<TKey>(Expression<Func<TEntity, TKey>> expression) where TKey : notnull
         {
             _options.OrderByDescendingName = typeof(TEntity)
                 .GetProperties()

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Firenet
 {
-    public interface IFireQuery<TEntity> where TEntity : class
+    public interface IFireQuery<TEntity>
     {
         // Sync
         TEntity[] ToArray();
@@ -19,6 +19,7 @@ namespace Firenet
         TEntity First(Expression<Func<TEntity, bool>> expression);
         TEntity FirstOrDefault(Expression<Func<TEntity, bool>> expression);
 
+
         // Async
         Task<TEntity[]> ToArrayAsync();
         Task<List<TEntity>> ToListAsync();
@@ -31,8 +32,9 @@ namespace Firenet
         Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> expression);
 
         // Preparing
-        IFireQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> expression);
-        IFireQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> expression);
+        IFireQuery<TResult> Select<TResult>(Expression<Func<TEntity, TResult>> expression) where TResult : notnull;
+        IFireQuery<TEntity> OrderBy<TKey>(Expression<Func<TEntity, TKey>> expression) where TKey : notnull;
+        IFireQuery<TEntity> OrderByDescending<TKey>(Expression<Func<TEntity, TKey>> expression) where TKey : notnull;
         IFireQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression);
     }
 }
