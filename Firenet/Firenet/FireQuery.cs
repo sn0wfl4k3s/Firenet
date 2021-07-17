@@ -123,12 +123,8 @@ namespace Firenet
                             .Select(p => (name: p.Name, value: Convert.ChangeType(dic.First(d => d.Key.Name == p.Name).Value, p.PropertyType)))
                             .ToList()
                             .ForEach(p => param.GetType().GetProperty(p.name).SetValue(param, p.value));
-
-                        if (_options.SelectOptions.Count is 1)
-                            return (TEntity)(_options.SelectOptions[0].Expression as LambdaExpression).Compile().DynamicInvoke(param);
-
                         return (TEntity) _options.SelectOptions
-                            .Aggregate(param, (p, sel) => (sel.Expression as LambdaExpression).Compile().DynamicInvoke(p));
+                            .Aggregate(param, (p, select) => (select.Expression as LambdaExpression).Compile().DynamicInvoke(p));
                     });
             }
             else
