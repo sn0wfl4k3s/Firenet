@@ -97,6 +97,10 @@ namespace UnitTests
             Assert.Equal(5, userNameAndEmail.Length);
             Assert.Equal("Eduardo: eduardo@gmail.com", userNameAndEmail[0]);
 
+            int[] userNameAndEmailLen = _context.Users.AsQueryable().Select(u => u.Name + ": " + u.Email).Select(s => s.Length).ToArray();
+            Assert.Equal(5, userNameAndEmailLen.Length);
+            Assert.Equal(26, userNameAndEmailLen[0]);
+
             int[] moreSelects = _context.Users.AsQueryable().Select(u => u.Points + 2).Select(p => p * 2).ToArray();
             Assert.Equal(5, moreSelects.Length);
             Assert.Equal(24, moreSelects[0]);
