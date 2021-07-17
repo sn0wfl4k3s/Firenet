@@ -103,7 +103,8 @@ namespace Firenet
             if (typeof(TEntity).IsPrimitive ||
                 typeof(TEntity) == typeof(string) ||
                 typeof(TEntity).IsEnum ||
-                typeof(TEntity).IsArray)
+                typeof(TEntity).IsArray ||
+                typeof(TEntity).IsValueType)
             {
                 PropertyInfo[] beforeProps = _options.SelectOptions[0].Before.GetProperties();
                 entities = ToDocuments()
