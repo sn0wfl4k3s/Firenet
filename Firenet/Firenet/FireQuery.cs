@@ -101,7 +101,7 @@ namespace Firenet
         {
             IEnumerable<TEntity> entities;
             if (typeof(TEntity).IsPrimitive ||
-                typeof(string).Equals(typeof(TEntity)) ||
+                typeof(TEntity) == typeof(string) ||
                 typeof(TEntity).IsEnum ||
                 typeof(TEntity).IsArray)
             {
