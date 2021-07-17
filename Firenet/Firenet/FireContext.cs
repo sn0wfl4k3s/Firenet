@@ -28,20 +28,17 @@ namespace Firenet
             => await FirestoreDb.RunTransactionAsync(callback);
         #endregion
 
-        private static FirestoreDb LoadFirestoreDb(string jsonCredentialsPath)
+        private FirestoreDb LoadFirestoreDb(string jsonCredentialsPath)
         {
             if (string.IsNullOrEmpty(jsonCredentialsPath))
                 throw new ArgumentException(nameof(JsonCredentials));
             if (!File.Exists(jsonCredentialsPath))
-                throw new FileNotFoundException(nameof(JsonCredentials));
-            var jsonObject = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(jsonCredentialsPath));
-            var builder = new FirestoreDbBuilder { ProjectId = jsonObject.ProjectId, CredentialsPath = jsonCredentialsPath };
+                throw new FileNotFoundException(jsonCredentialsPath);
+            string projectId = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(jsonCredentialsPath)).ProjectId;
+            FirestoreDbBuilder builder = new() { ProjectId = projectId, CredentialsPath = jsonCredentialsPath };
             return builder.Build();
         }
 
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
+        public void Dispose() => GC.SuppressFinalize(this);
     }
 }
