@@ -87,18 +87,19 @@ namespace Firenet
             {
                 Before = typeof(TEntity),
                 After = typeof(TResult),
-                Properties = typeof(TEntity)
-                    .GetProperties()
-                    .Where(p => expression.Body.ToString().Contains(p.Name))
-                    .Select(p => p.Name)
-                    .ToArray(),
                 Expression = expression
             };
-            
-            if (_queries.Count is 0)
-                _queries.Add(_sourceQuery);
-            _queries = _queries.Select(q => q.Select(selectOptions.Properties)).ToHashSet();
-            _options.SelectOptions = selectOptions;
+            if (_options.SelectOptions.Count == 0)
+            {
+                _options.Properties = typeof(TEntity)
+                        .GetProperties()
+                        .Where(p => expression.Body.ToString().Contains(p.Name))
+                        .Select(p => p.Name)
+                        .ToArray();
+                if (_queries.Count is 0) _queries.Add(_sourceQuery);
+                _queries = _queries.Select(q => q.Select(_options.Properties)).ToHashSet();
+            }
+            _options.SelectOptions.Add(selectOptions);
             return new FireQuery<TResult>(_sourceQuery, _queries, _options);
         }
 
@@ -108,13 +109,13 @@ namespace Firenet
             Type type = typeof(TEntity);
             if (type.IsPrimitive || typeof(string).Equals(type) || type.IsEnum || type.IsArray)
             {
-                PropertyInfo[] beforeProps = _options.SelectOptions.Before.GetProperties();
+                PropertyInfo[] beforeProps = _options.SelectOptions[0].Before.GetProperties();
                 entities = ToDocuments()
                     .Select(d => d.ToDictionary())
                     .Select(d => d.ToDictionary(dic => beforeProps.First(p => dic.Key.Equals(p.Name)), dic => dic.Value))
                     .Select(dic =>
                     {
-                        object param = Activator.CreateInstance(_options.SelectOptions.Before);
+                        object param = Activator.CreateInstance(_options.SelectOptions[0].Before);
                         param
                             .GetType()
                             .GetProperties()
@@ -122,8 +123,12 @@ namespace Firenet
                             .Select(p => (name: p.Name, value: Convert.ChangeType(dic.First(d => d.Key.Name == p.Name).Value, p.PropertyType)))
                             .ToList()
                             .ForEach(p => param.GetType().GetProperty(p.name).SetValue(param, p.value));
-                        object result = (_options.SelectOptions.Expression as LambdaExpression).Compile().DynamicInvoke(param);
-                        return (TEntity) result;
+
+                        if (_options.SelectOptions.Count is 1)
+                            return (TEntity)(_options.SelectOptions[0].Expression as LambdaExpression).Compile().DynamicInvoke(param);
+
+                        return (TEntity) _options.SelectOptions
+                            .Aggregate(param, (p, sel) => (sel.Expression as LambdaExpression).Compile().DynamicInvoke(p));
                     });
             }
             else

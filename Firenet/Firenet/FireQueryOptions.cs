@@ -4,20 +4,16 @@ using System.Linq.Expressions;
 
 namespace Firenet
 {
-    internal class FireQueryOptions : ICloneable
+    internal class FireQueryOptions
     {
         public string OrderByName { get; set; }
         public string OrderByDescendingName { get; set; }
-        public SelectOptions SelectOptions { get; set; }
-        public object Clone()
-        {
-            return this;
-        }
+        public string[] Properties { get; set; }
+        public List<SelectOptions> SelectOptions { get; set; } = new();
     }
 
     internal class SelectOptions
     {
-        public string[] Properties { get; set; }
         public Expression Expression { get; set; }
         public Type Before { get; set; }
         public Type After { get; set; }
