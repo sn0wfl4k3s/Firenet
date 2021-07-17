@@ -97,12 +97,13 @@ namespace UnitTests
             Assert.Equal(5, userNameAndEmail.Length);
             Assert.Equal("Eduardo: eduardo@gmail.com", userNameAndEmail[0]);
 
-            int[] moreSelects = _context.Users.AsQueryable()
-                .Select(u => u.Points + 2)
-                .Select(p => p * 2)
-                .ToArray();
+            int[] moreSelects = _context.Users.AsQueryable().Select(u => u.Points + 2).Select(p => p * 2).ToArray();
             Assert.Equal(5, moreSelects.Length);
             Assert.Equal(24, moreSelects[0]);
+            Assert.Equal(44, moreSelects[1]);
+            Assert.Equal(64, moreSelects[2]);
+            Assert.Equal(84, moreSelects[3]);
+            Assert.Equal(104, moreSelects[4]);
         }
     }
 }

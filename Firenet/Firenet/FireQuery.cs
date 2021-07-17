@@ -83,13 +83,7 @@ namespace Firenet
 
         public IFireQuery<TResult> Select<TResult>(Expression<Func<TEntity, TResult>> expression) where TResult : notnull
         {
-            var selectOptions = new SelectOptions
-            {
-                Before = typeof(TEntity),
-                After = typeof(TResult),
-                Expression = expression
-            };
-            if (_options.SelectOptions.Count == 0)
+            if (_options.SelectOptions.Count is 0)
             {
                 _options.Properties = typeof(TEntity)
                         .GetProperties()
@@ -99,6 +93,7 @@ namespace Firenet
                 if (_queries.Count is 0) _queries.Add(_sourceQuery);
                 _queries = _queries.Select(q => q.Select(_options.Properties)).ToHashSet();
             }
+            SelectOptions selectOptions = new() { Before = typeof(TEntity), After = typeof(TResult), Expression = expression };
             _options.SelectOptions.Add(selectOptions);
             return new FireQuery<TResult>(_sourceQuery, _queries, _options);
         }
@@ -106,8 +101,10 @@ namespace Firenet
         public IEnumerable<TEntity> ToEnumerable()
         {
             IEnumerable<TEntity> entities;
-            Type type = typeof(TEntity);
-            if (type.IsPrimitive || typeof(string).Equals(type) || type.IsEnum || type.IsArray)
+            if (typeof(TEntity).IsPrimitive ||
+                typeof(string).Equals(typeof(TEntity)) ||
+                typeof(TEntity).IsEnum ||
+                typeof(TEntity).IsArray)
             {
                 PropertyInfo[] beforeProps = _options.SelectOptions[0].Before.GetProperties();
                 entities = ToDocuments()
@@ -120,11 +117,11 @@ namespace Firenet
                             .GetType()
                             .GetProperties()
                             .Where(p => dic.ContainsKey(p))
-                            .Select(p => (name: p.Name, value: Convert.ChangeType(dic.First(d => d.Key.Name == p.Name).Value, p.PropertyType)))
-                            .ToList()
-                            .ForEach(p => param.GetType().GetProperty(p.name).SetValue(param, p.value));
-                        return (TEntity) _options.SelectOptions
-                            .Aggregate(param, (p, select) => (select.Expression as LambdaExpression).Compile().DynamicInvoke(p));
+                            .Select(p => (name: p.Name, value: Convert.ChangeType(dic.First(d => d.Key.Name.Equals(p.Name)).Value, p.PropertyType)))
+                            .AsParallel()
+                            .ForAll(p => param.GetType().GetProperty(p.name).SetValue(param, p.value));
+                        return (TEntity)_options.SelectOptions
+                            .Aggregate(param, (p, select) => select.Expression.Compile().DynamicInvoke(p));
                     });
             }
             else

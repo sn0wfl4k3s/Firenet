@@ -14,7 +14,7 @@ namespace Firenet
 
     internal class SelectOptions
     {
-        public Expression Expression { get; set; }
+        public LambdaExpression Expression { get; set; }
         public Type Before { get; set; }
         public Type After { get; set; }
     }
