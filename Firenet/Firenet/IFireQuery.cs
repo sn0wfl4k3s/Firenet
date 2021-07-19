@@ -13,6 +13,7 @@ namespace Firenet
         IEnumerable<TEntity> ToEnumerable();
         int Count();
         int Count(Expression<Func<TEntity, bool>> expression);
+        bool Any();
         bool Any(Expression<Func<TEntity, bool>> expression);
         TEntity Last(Expression<Func<TEntity, bool>> expression);
         TEntity LastOrDefault(Expression<Func<TEntity, bool>> expression);
@@ -25,6 +26,7 @@ namespace Firenet
         Task<List<TEntity>> ToListAsync();
         Task<int> CountAsync();
         Task<int> CountAsync(Expression<Func<TEntity, bool>> expression);
+        Task<bool> AnyAsync();
         Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression);
         Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression);
         Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> expression);

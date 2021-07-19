@@ -36,6 +36,7 @@ namespace Firenet
         public int Count(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length;
         public TEntity[] ToArray() => ToEnumerable().ToArray();
         public List<TEntity> ToList() => ToEnumerable().ToList();
+        public bool Any() => ToDocuments().Length > 0;
         public bool Any(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length > 0;
         public TEntity First(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments()[0].ConvertTo<TEntity>();
         public TEntity FirstOrDefault(Expression<Func<TEntity, bool>> expression)
@@ -56,6 +57,7 @@ namespace Firenet
         public async Task<int> CountAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Count(expression));
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
         public async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
+        public async Task<bool> AnyAsync() => await Task.FromResult(Any());
         public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Any(expression));
         public async Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Last(expression));
         public async Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(First(expression));
