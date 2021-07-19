@@ -19,10 +19,10 @@ namespace UnitTests
             Assert.NotNull(admin);
             Assert.Equal("Eduardo", admin.Name);
 
-            var userLessThanTen = _context.Users.AsQueryable().FirstOrDefault(u => u.Points < 10);
+            var userLessThanTen = _context.Users.AsQueryable().Where(u => u.Points < 10).FirstOrDefault();
             Assert.Null(userLessThanTen);
 
-            var userGreaterThanTen = _context.Users.AsQueryable().FirstOrDefault(u => u.Points > 10);
+            var userGreaterThanTen = _context.Users.AsQueryable().Where(u => u.Points > 10).FirstOrDefault();
             Assert.NotNull(userGreaterThanTen);
             Assert.Equal("Ricardo", userGreaterThanTen.Name);
         }
@@ -34,11 +34,11 @@ namespace UnitTests
             Assert.NotNull(maiorQue10);
             Assert.Equal("Fabiana", maiorQue10.Name);
 
-            var ultimoNaoAdmin = _context.Users.AsQueryable().LastOrDefault(u => !u.IsAdmin);
+            var ultimoNaoAdmin = _context.Users.AsQueryable().Where(u => !u.IsAdmin).LastOrDefault();
             Assert.NotNull(ultimoNaoAdmin);
             Assert.Equal("Fabiana", ultimoNaoAdmin.Name);
 
-            var lessThanTen = _context.Users.AsQueryable().LastOrDefault(u => u.Points < 10);
+            var lessThanTen = _context.Users.AsQueryable().Where(u => u.Points < 10).LastOrDefault();
             Assert.Null(lessThanTen);
         }
 

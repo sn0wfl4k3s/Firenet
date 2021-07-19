@@ -38,14 +38,28 @@ namespace Firenet
         public List<TEntity> ToList() => ToEnumerable().ToList();
         public bool Any() => ToDocuments().Length > 0;
         public bool Any(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length > 0;
+        public TEntity First() => ToDocuments()[0].ConvertTo<TEntity>();
         public TEntity First(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments()[0].ConvertTo<TEntity>();
+        public TEntity FirstOrDefault()
+        {
+            DocumentSnapshot[] docs = ToDocuments();
+            if (docs is null or { Length: 0 }) return default;
+            return docs[0].ConvertTo<TEntity>();
+        }
         public TEntity FirstOrDefault(Expression<Func<TEntity, bool>> expression)
         {
             DocumentSnapshot[] docs = Predicate(expression).ToDocuments();
             if (docs is null or { Length: 0 }) return default;
             return docs[0].ConvertTo<TEntity>();
         }
+        public TEntity Last() => ToDocuments()[^1].ConvertTo<TEntity>();
         public TEntity Last(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments()[^1].ConvertTo<TEntity>();
+        public TEntity LastOrDefault()
+        {
+            DocumentSnapshot[] docs = ToDocuments();
+            if (docs is null or { Length: 0 }) return default;
+            return docs[^1].ConvertTo<TEntity>();
+        }
         public TEntity LastOrDefault(Expression<Func<TEntity, bool>> expression)
         {
             DocumentSnapshot[] docs = Predicate(expression).ToDocuments();
@@ -59,9 +73,13 @@ namespace Firenet
         public async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
         public async Task<bool> AnyAsync() => await Task.FromResult(Any());
         public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Any(expression));
+        public async Task<TEntity> LastAsync() => await Task.FromResult(Last());
         public async Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Last(expression));
+        public async Task<TEntity> FirstAsync() => await Task.FromResult(First());
         public async Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(First(expression));
+        public async Task<TEntity> LastOrDefaultAsync() => await Task.FromResult(LastOrDefault());
         public async Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(LastOrDefault(expression));
+        public async Task<TEntity> FirstOrDefaultAsync() => await Task.FromResult(FirstOrDefault());
         public async Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(FirstOrDefault(expression));
 
         private DocumentSnapshot[] ToDocuments()
