@@ -18,5 +18,21 @@ namespace UnitTests
             bool temEdu = _context.Users.AsQueryable().Where(u => u.Name == "Eduardo").Any();
             Assert.True(temEdu);
         }
+
+        [Fact(DisplayName = "Query com All")]
+        public void AllQuery()
+        {
+            bool todosSaoAdmin = _context.Users.AsQueryable().All(u => u.IsAdmin);
+            Assert.False(todosSaoAdmin);
+
+            todosSaoAdmin = _context.Users.AsQueryable().Where(u => u.IsAdmin).All();
+            Assert.False(todosSaoAdmin);
+
+            bool todosSaoAbaixoDe60 = _context.Users.AsQueryable().All(u => u.Points < 60);
+            Assert.True(todosSaoAbaixoDe60);
+
+            todosSaoAbaixoDe60 = _context.Users.AsQueryable().Where(u => u.Points < 60).All();
+            Assert.True(todosSaoAbaixoDe60);
+        }
     }
 }
