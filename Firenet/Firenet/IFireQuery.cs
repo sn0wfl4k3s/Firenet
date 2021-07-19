@@ -11,6 +11,8 @@ namespace Firenet
         TEntity[] ToArray();
         List<TEntity> ToList();
         IEnumerable<TEntity> ToEnumerable();
+        long LongCount();
+        long LongCount(Expression<Func<TEntity, bool>> expression);
         int Count();
         int Count(Expression<Func<TEntity, bool>> expression);
         bool All();
@@ -26,10 +28,11 @@ namespace Firenet
         TEntity FirstOrDefault();
         TEntity FirstOrDefault(Expression<Func<TEntity, bool>> expression);
 
-
         // Async
         Task<TEntity[]> ToArrayAsync();
         Task<List<TEntity>> ToListAsync();
+        Task<long> LongCountAsync();
+        Task<long> LongCountAsync(Expression<Func<TEntity, bool>> expression);
         Task<int> CountAsync();
         Task<int> CountAsync(Expression<Func<TEntity, bool>> expression);
         Task<bool> AllAsync();

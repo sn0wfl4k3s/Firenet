@@ -32,8 +32,12 @@ namespace Firenet
             _documentComparer = new DocumentSnapshotComparer();
         }
 
+        // take
+        // skip
         public int Count() => ToDocuments().Length;
         public int Count(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length;
+        public long LongCount() => ToDocuments().LongLength;
+        public long LongCount(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().LongLength;
         public TEntity[] ToArray() => ToEnumerable().ToArray();
         public List<TEntity> ToList() => ToEnumerable().ToList();
         public bool All() => Count() == Count();
@@ -71,11 +75,13 @@ namespace Firenet
 
         public async Task<int> CountAsync() => await Task.FromResult(Count());
         public async Task<int> CountAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Count(expression));
+        public async Task<long> LongCountAsync() => await Task.FromResult(LongCount());
+        public async Task<long> LongCountAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(LongCount(expression));
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
         public async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
         public async Task<bool> AllAsync() => await Task.FromResult(All());
-        public async Task<bool> AnyAsync() => await Task.FromResult(Any());
         public async Task<bool> AllAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(All(expression));
+        public async Task<bool> AnyAsync() => await Task.FromResult(Any());
         public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Any(expression));
         public async Task<TEntity> LastAsync() => await Task.FromResult(Last());
         public async Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Last(expression));
