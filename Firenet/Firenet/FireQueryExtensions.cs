@@ -35,7 +35,7 @@ namespace Firenet
 
             string propertyName = property.Name;
             var attribute = property.GetCustomAttribute<FirestorePropertyAttribute>();
-            if (attribute != null)
+            if (attribute != null && !string.IsNullOrEmpty(attribute.Name))
             {
                 propertyName = attribute.Name;
             }
