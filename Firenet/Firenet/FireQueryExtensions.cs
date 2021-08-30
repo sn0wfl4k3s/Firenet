@@ -34,22 +34,27 @@ namespace Firenet
             if (property is not null && (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?)))
                 value = DateTime.SpecifyKind((DateTime)value, DateTimeKind.Utc);
 
+            string propertyName = property.Name;
+            var attribute = property.GetCustomAttribute<FirestorePropertyAttribute>();
+            if (attribute != null && !string.IsNullOrEmpty(attribute.Name))
+            {
+                propertyName = attribute.Name;
+            }
+
             return (expression.NodeType, value, method) switch
             {
-                (ExpressionType.Equal, _, _) => query.WhereEqualTo(property.Name, value),
-                (ExpressionType.NotEqual, _, _) => query.WhereNotEqualTo(property.Name, value),
-                (ExpressionType.GreaterThan, _, _) => query.WhereGreaterThan(property.Name, value),
-                (ExpressionType.GreaterThanOrEqual, _, _) => query.WhereGreaterThanOrEqualTo(property.Name, value),
-                (ExpressionType.LessThanOrEqual, _, _) => query.WhereLessThanOrEqualTo(property.Name, value),
-                (ExpressionType.LessThan, _, _) => query.WhereLessThan(property.Name, value),
-                (ExpressionType.MemberAccess, null, _) => query.WhereEqualTo(property.Name, true),
-                (ExpressionType.Not, null, _) => query.WhereEqualTo(property.Name, false),
-                (ExpressionType.Call, not null and string, "Contains") => query.WhereArrayContains(property.Name, value),
+                (ExpressionType.Equal, _, _) => query.WhereEqualTo(propertyName, value),
+                (ExpressionType.NotEqual, _, _) => query.WhereNotEqualTo(propertyName, value),
+                (ExpressionType.GreaterThan, _, _) => query.WhereGreaterThan(propertyName, value),
+                (ExpressionType.GreaterThanOrEqual, _, _) => query.WhereGreaterThanOrEqualTo(propertyName, value),
+                (ExpressionType.LessThanOrEqual, _, _) => query.WhereLessThanOrEqualTo(propertyName, value),
+                (ExpressionType.LessThan, _, _) => query.WhereLessThan(propertyName, value),
+                (ExpressionType.MemberAccess, null, _) => query.WhereEqualTo(propertyName, true),
+                (ExpressionType.Not, null, _) => query.WhereEqualTo(propertyName, false),
+                (ExpressionType.Call, not null and string, "Contains") => query.WhereArrayContains(propertyName, value),
                 (ExpressionType.Call, not null and string, "StartsWith") => query
-                    .WhereLessThanOrEqualTo(property.Name, $"{value}~")
-                    .WhereGreaterThanOrEqualTo(property.Name, value),
-                (ExpressionType.Constant, true, _) => query,
-                (ExpressionType.Constant, false, _) => query.Limit(0),
+                    .WhereLessThanOrEqualTo(propertyName, $"{value}~")
+                    .WhereGreaterThanOrEqualTo(propertyName, value),
                 _ => throw new InvalidOperationException()
             };
         }
