@@ -34,17 +34,36 @@ namespace Firenet
 
         public int Count() => ToDocuments().Length;
         public int Count(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length;
+        public long LongCount() => ToDocuments().LongLength;
+        public long LongCount(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().LongLength;
         public TEntity[] ToArray() => ToEnumerable().ToArray();
         public List<TEntity> ToList() => ToEnumerable().ToList();
-        public bool Any(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length > 0;
+        public bool All() => Count() == Count();
+        public bool All(Expression<Func<TEntity, bool>> expression) => Count(expression) == Count();
+        public bool Any() => Count() > 0;
+        public bool Any(Expression<Func<TEntity, bool>> expression) => Count(expression) > 0;
+        public TEntity First() => ToDocuments()[0].ConvertTo<TEntity>();
         public TEntity First(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments()[0].ConvertTo<TEntity>();
+        public TEntity FirstOrDefault()
+        {
+            DocumentSnapshot[] docs = ToDocuments();
+            if (docs is null or { Length: 0 }) return default;
+            return docs[0].ConvertTo<TEntity>();
+        }
         public TEntity FirstOrDefault(Expression<Func<TEntity, bool>> expression)
         {
             DocumentSnapshot[] docs = Predicate(expression).ToDocuments();
             if (docs is null or { Length: 0 }) return default;
             return docs[0].ConvertTo<TEntity>();
         }
+        public TEntity Last() => ToDocuments()[^1].ConvertTo<TEntity>();
         public TEntity Last(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments()[^1].ConvertTo<TEntity>();
+        public TEntity LastOrDefault()
+        {
+            DocumentSnapshot[] docs = ToDocuments();
+            if (docs is null or { Length: 0 }) return default;
+            return docs[^1].ConvertTo<TEntity>();
+        }
         public TEntity LastOrDefault(Expression<Func<TEntity, bool>> expression)
         {
             DocumentSnapshot[] docs = Predicate(expression).ToDocuments();
@@ -54,12 +73,21 @@ namespace Firenet
 
         public async Task<int> CountAsync() => await Task.FromResult(Count());
         public async Task<int> CountAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Count(expression));
+        public async Task<long> LongCountAsync() => await Task.FromResult(LongCount());
+        public async Task<long> LongCountAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(LongCount(expression));
         public async Task<TEntity[]> ToArrayAsync() => await Task.FromResult(ToArray());
         public async Task<List<TEntity>> ToListAsync() => await Task.FromResult(ToList());
+        public async Task<bool> AllAsync() => await Task.FromResult(All());
+        public async Task<bool> AllAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(All(expression));
+        public async Task<bool> AnyAsync() => await Task.FromResult(Any());
         public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Any(expression));
+        public async Task<TEntity> LastAsync() => await Task.FromResult(Last());
         public async Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(Last(expression));
+        public async Task<TEntity> FirstAsync() => await Task.FromResult(First());
         public async Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(First(expression));
+        public async Task<TEntity> LastOrDefaultAsync() => await Task.FromResult(LastOrDefault());
         public async Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(LastOrDefault(expression));
+        public async Task<TEntity> FirstOrDefaultAsync() => await Task.FromResult(FirstOrDefault());
         public async Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> expression) => await Task.FromResult(FirstOrDefault(expression));
 
         private DocumentSnapshot[] ToDocuments()
@@ -87,7 +115,7 @@ namespace Firenet
                 _options.Properties = typeof(TEntity)
                         .GetProperties()
                         .Where(p => expression.Body.ToString().Contains(p.Name))
-                        .Select(p => p.Name)
+                        .Select(p => p?.GetCustomAttribute<FirestorePropertyAttribute>()?.Name ?? p.Name)
                         .ToArray();
                 if (_queries.Count is 0) _queries.Add(_sourceQuery);
                 _queries = _queries.Select(q => q.Select(_options.Properties)).ToHashSet();
@@ -109,7 +137,9 @@ namespace Firenet
                 PropertyInfo[] beforeProps = _options.SelectOptions[0].Before.GetProperties();
                 entities = ToDocuments()
                     .Select(d => d.ToDictionary())
-                    .Select(d => d.ToDictionary(dic => beforeProps.First(p => dic.Key.Equals(p.Name)), dic => dic.Value))
+                    .Select(d => d.ToDictionary(
+                        dic => beforeProps.First(p => dic.Key.Equals(p.Name) || dic.Key.Equals(p?.GetCustomAttribute<FirestorePropertyAttribute>()?.Name)), 
+                        dic => dic.Value))
                     .Select(dic =>
                     {
                         object param = Activator.CreateInstance(_options.SelectOptions[0].Before);
@@ -120,8 +150,7 @@ namespace Firenet
                             .Select(p => (name: p.Name, value: Convert.ChangeType(dic.First(d => d.Key.Name.Equals(p.Name)).Value, p.PropertyType)))
                             .AsParallel()
                             .ForAll(p => param.GetType().GetProperty(p.name).SetValue(param, p.value));
-                        return (TEntity)_options.SelectOptions
-                            .Aggregate(param, (p, select) => select.Expression.Compile().DynamicInvoke(p));
+                        return (TEntity)_options.SelectOptions.Aggregate(param, (p, select) => select.Expression.Compile().DynamicInvoke(p));
                     });
             }
             else

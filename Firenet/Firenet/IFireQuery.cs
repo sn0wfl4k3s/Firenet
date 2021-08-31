@@ -11,24 +11,41 @@ namespace Firenet
         TEntity[] ToArray();
         List<TEntity> ToList();
         IEnumerable<TEntity> ToEnumerable();
+        long LongCount();
+        long LongCount(Expression<Func<TEntity, bool>> expression);
         int Count();
         int Count(Expression<Func<TEntity, bool>> expression);
+        bool All();
+        bool All(Expression<Func<TEntity, bool>> expression);
+        bool Any();
         bool Any(Expression<Func<TEntity, bool>> expression);
+        TEntity Last();
         TEntity Last(Expression<Func<TEntity, bool>> expression);
+        TEntity LastOrDefault();
         TEntity LastOrDefault(Expression<Func<TEntity, bool>> expression);
+        TEntity First();
         TEntity First(Expression<Func<TEntity, bool>> expression);
+        TEntity FirstOrDefault();
         TEntity FirstOrDefault(Expression<Func<TEntity, bool>> expression);
-
 
         // Async
         Task<TEntity[]> ToArrayAsync();
         Task<List<TEntity>> ToListAsync();
+        Task<long> LongCountAsync();
+        Task<long> LongCountAsync(Expression<Func<TEntity, bool>> expression);
         Task<int> CountAsync();
         Task<int> CountAsync(Expression<Func<TEntity, bool>> expression);
+        Task<bool> AllAsync();
+        Task<bool> AllAsync(Expression<Func<TEntity, bool>> expression);
+        Task<bool> AnyAsync();
         Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression);
+        Task<TEntity> LastAsync();
         Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> expression);
+        Task<TEntity> LastOrDefaultAsync();
         Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> expression);
+        Task<TEntity> FirstAsync();
         Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> expression);
+        Task<TEntity> FirstOrDefaultAsync();
         Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> expression);
 
         // Preparing

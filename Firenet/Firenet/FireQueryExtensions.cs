@@ -21,20 +21,21 @@ namespace Firenet
 
             string method = (expression as MethodCallExpression)?.Method.Name;
 
-            object value = (binary, isPropertyAtLeft, method) switch
+            object value = (binary, isPropertyAtLeft, method, expression.NodeType) switch
             {
-                (not null, false, _) => Expression.Lambda(binary.Left).Compile().DynamicInvoke(),
-                (not null, true, _) => Expression.Lambda(binary.Right).Compile().DynamicInvoke(),
-                (null, null, "Contains") => Regex.Replace(expression.ToString(), @".*?Contains\(\""|\""\)", string.Empty),
-                (null, null, "StartsWith") => Regex.Replace(expression.ToString(), @".*?StartsWith\(\""|\""\)", string.Empty),
+                (not null, false, _, _) => Expression.Lambda(binary.Left).Compile().DynamicInvoke(),
+                (not null, true, _, _) => Expression.Lambda(binary.Right).Compile().DynamicInvoke(),
+                (null, null, "Contains", _) => Regex.Replace(expression.ToString(), @".*?Contains\(\""|\""\)", string.Empty),
+                (null, null, "StartsWith", _) => Regex.Replace(expression.ToString(), @".*?StartsWith\(\""|\""\)", string.Empty),
+                (_, _, _, ExpressionType.Constant) => Expression.Lambda(expression).Compile().DynamicInvoke(),
                 _ => null
             };
 
-            if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
+            if (property is not null && (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?)))
                 value = DateTime.SpecifyKind((DateTime)value, DateTimeKind.Utc);
 
-            string propertyName = property.Name;
-            var attribute = property.GetCustomAttribute<FirestorePropertyAttribute>();
+            string propertyName = property?.Name;
+            var attribute = property?.GetCustomAttribute<FirestorePropertyAttribute>();
             if (attribute != null && !string.IsNullOrEmpty(attribute.Name))
             {
                 propertyName = attribute.Name;
@@ -54,6 +55,8 @@ namespace Firenet
                 (ExpressionType.Call, not null and string, "StartsWith") => query
                     .WhereLessThanOrEqualTo(propertyName, $"{value}~")
                     .WhereGreaterThanOrEqualTo(propertyName, value),
+                (ExpressionType.Constant, true, _) => query,
+                (ExpressionType.Constant, false, _) => query.Limit(0),
                 _ => throw new InvalidOperationException()
             };
         }

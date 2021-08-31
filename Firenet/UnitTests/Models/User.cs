@@ -12,7 +12,7 @@ namespace UnitTests.Models
         [FirestoreProperty]
         public string Name { get; set; }
 
-        [FirestoreProperty]
+        [FirestoreProperty("email")]
         public string Email { get; set; }
 
         [FirestoreProperty]
