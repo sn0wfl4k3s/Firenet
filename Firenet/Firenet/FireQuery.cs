@@ -32,8 +32,6 @@ namespace Firenet
             _documentComparer = new DocumentSnapshotComparer();
         }
 
-        // take
-        // skip
         public int Count() => ToDocuments().Length;
         public int Count(Expression<Func<TEntity, bool>> expression) => Predicate(expression).ToDocuments().Length;
         public long LongCount() => ToDocuments().LongLength;
@@ -117,7 +115,7 @@ namespace Firenet
                 _options.Properties = typeof(TEntity)
                         .GetProperties()
                         .Where(p => expression.Body.ToString().Contains(p.Name))
-                        .Select(p => p.Name)
+                        .Select(p => p?.GetCustomAttribute<FirestorePropertyAttribute>()?.Name ?? p.Name)
                         .ToArray();
                 if (_queries.Count is 0) _queries.Add(_sourceQuery);
                 _queries = _queries.Select(q => q.Select(_options.Properties)).ToHashSet();
@@ -139,7 +137,9 @@ namespace Firenet
                 PropertyInfo[] beforeProps = _options.SelectOptions[0].Before.GetProperties();
                 entities = ToDocuments()
                     .Select(d => d.ToDictionary())
-                    .Select(d => d.ToDictionary(dic => beforeProps.First(p => dic.Key.Equals(p.Name)), dic => dic.Value))
+                    .Select(d => d.ToDictionary(
+                        dic => beforeProps.First(p => dic.Key.Equals(p.Name) || dic.Key.Equals(p?.GetCustomAttribute<FirestorePropertyAttribute>()?.Name)), 
+                        dic => dic.Value))
                     .Select(dic =>
                     {
                         object param = Activator.CreateInstance(_options.SelectOptions[0].Before);
@@ -150,8 +150,7 @@ namespace Firenet
                             .Select(p => (name: p.Name, value: Convert.ChangeType(dic.First(d => d.Key.Name.Equals(p.Name)).Value, p.PropertyType)))
                             .AsParallel()
                             .ForAll(p => param.GetType().GetProperty(p.name).SetValue(param, p.value));
-                        return (TEntity)_options.SelectOptions
-                            .Aggregate(param, (p, select) => select.Expression.Compile().DynamicInvoke(p));
+                        return (TEntity)_options.SelectOptions.Aggregate(param, (p, select) => select.Expression.Compile().DynamicInvoke(p));
                     });
             }
             else

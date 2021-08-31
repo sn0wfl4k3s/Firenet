@@ -34,8 +34,8 @@ namespace Firenet
             if (property is not null && (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?)))
                 value = DateTime.SpecifyKind((DateTime)value, DateTimeKind.Utc);
 
-            string propertyName = property.Name;
-            var attribute = property.GetCustomAttribute<FirestorePropertyAttribute>();
+            string propertyName = property?.Name;
+            var attribute = property?.GetCustomAttribute<FirestorePropertyAttribute>();
             if (attribute != null && !string.IsNullOrEmpty(attribute.Name))
             {
                 propertyName = attribute.Name;
@@ -55,6 +55,8 @@ namespace Firenet
                 (ExpressionType.Call, not null and string, "StartsWith") => query
                     .WhereLessThanOrEqualTo(propertyName, $"{value}~")
                     .WhereGreaterThanOrEqualTo(propertyName, value),
+                (ExpressionType.Constant, true, _) => query,
+                (ExpressionType.Constant, false, _) => query.Limit(0),
                 _ => throw new InvalidOperationException()
             };
         }
