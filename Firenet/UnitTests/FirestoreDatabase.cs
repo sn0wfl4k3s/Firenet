@@ -8,11 +8,13 @@ namespace UnitTests
 {
     public class FirestoreDatabase : IDisposable
     {
+        public static readonly string CredentialsPath = $@"C:\Users\{Environment.UserName}\Downloads\firebase-admin.json";
+
         public AppDbContext Context { get; private set; }
 
         public FirestoreDatabase()
         {
-            Context = FireContextBuilder<AppDbContext>.Build();
+            Context = FireContextBuilder<AppDbContext>.Build(o => o.SetJsonCredentialsPath(CredentialsPath));
         }
 
         public void LoadAllData()
