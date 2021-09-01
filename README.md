@@ -30,3 +30,17 @@ Add on startup configureServices:
 
 Or in console application, instance:  
 ![image](https://user-images.githubusercontent.com/30809620/120727951-33f74d00-c4b2-11eb-840e-c560ebcf68b2.png) 
+
+## Last version news (1.1.0 or later)
+
+In this last version or later, no more need the configuring for JsonCredentialsPath if you have already configured the environment variable GOOGLE_APPLICATION_CREDENTIALS in machine that is running your dotnet application. Now you just need put the constructor with base, like below:  
+![image](https://user-images.githubusercontent.com/30809620/131598460-c9a5baef-78cf-4b3c-a760-c3d2f8efcc42.png)
+
+And the instantiation or dependency injection keep the same way:  
+![image](https://user-images.githubusercontent.com/30809620/131598672-c627b2d6-7a4a-4620-98ec-8f5b7508e57f.png)  
+
+![image](https://user-images.githubusercontent.com/30809620/131598715-d3dcd2f6-87e2-4bd2-b9ce-7df471531404.png)  
+
+But if you want set the path of your json credentials file from firestore, you should configuring like below:  
+![image](https://user-images.githubusercontent.com/30809620/131599087-f383c52a-64b5-4e87-8ee3-f898c033b88c.png)  
+![image](https://user-images.githubusercontent.com/30809620/131599238-3ffa196a-606e-48b1-9bd2-ecdefb3de1d0.png)  
