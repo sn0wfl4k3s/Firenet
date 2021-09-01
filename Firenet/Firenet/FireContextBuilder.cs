@@ -9,7 +9,7 @@ namespace Firenet
     public static class FireContextBuilder<TContext> where TContext : FireContext
     {
         /// <summary>
-        /// Build with the <paramref name="options"/>.
+        /// Build the context with the <paramref name="options"/>.
         /// </summary>
         /// <returns></returns>
         public static TContext Build(Action<FireOption> options)
@@ -20,7 +20,7 @@ namespace Firenet
         }
 
         /// <summary>
-        /// Build with the environment variable 'GOOGLE_APPLICATION_CREDENTIALS' which should previusly configured.
+        /// Build the context with the environment variable 'GOOGLE_APPLICATION_CREDENTIALS' which should previusly configured.
         /// </summary>
         /// <returns></returns>
         public static TContext Build()

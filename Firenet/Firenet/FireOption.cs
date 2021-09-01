@@ -15,7 +15,7 @@ namespace Firenet
         public bool IsFromEnviromentVariable => _isFromEnviromentVariable;
 
         /// <summary>
-        /// Set the <paramref name="jsonCredentialsPath"/>.
+        /// Set the path of credentials json file.
         /// </summary>
         /// <param name="jsonCredentialsPath"></param>
         /// <returns></returns>
@@ -34,7 +34,7 @@ namespace Firenet
         }
 
         /// <summary>
-        /// Get from the environment variable 'GOOGLE_APPLICATION_CREDENTIALS' which should previusly configured.
+        /// Get the credentials from the environment variable 'GOOGLE_APPLICATION_CREDENTIALS' which should previusly configured.
         /// </summary>
         /// <returns></returns>
         public FireOption GetFromGoogleEnvironmentVariable()
