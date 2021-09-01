@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Firenet
 {
-    public static class FireCollectionExtensions
+    internal static class FireCollectionExtensions
     {
         public static TEntity SetUtcDatetimes<TEntity>(this TEntity entity)
             where TEntity : class
