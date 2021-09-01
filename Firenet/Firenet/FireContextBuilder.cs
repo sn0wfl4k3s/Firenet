@@ -16,9 +16,7 @@ namespace Firenet
         {
             FireOption fireOption = new();
             options.Invoke(fireOption);
-            FirestoreDbBuilder builder = new() { ProjectId = fireOption.ProjectId, CredentialsPath = fireOption.JsonCredentialsPath };
-            FirestoreDb firestoreDb = builder.Build();
-            return CreateInstance(firestoreDb);
+            return CreateInstance(fireOption);
         }
 
         /// <summary>
@@ -29,13 +27,13 @@ namespace Firenet
         {
             FireOption options = new();
             options.GetFromGoogleEnvironmentVariable();
-            FirestoreDbBuilder builder = new() { ProjectId = options.ProjectId, CredentialsPath = options.JsonCredentialsPath };
-            FirestoreDb firestoreDb = builder.Build();
-            return CreateInstance(firestoreDb);
+            return CreateInstance(options);
         }
 
-        private static TContext CreateInstance(FirestoreDb firestoreDb)
+        private static TContext CreateInstance(FireOption options)
         {
+            FirestoreDbBuilder builder = new() { ProjectId = options.ProjectId, CredentialsPath = options.JsonCredentialsPath };
+            FirestoreDb firestoreDb = builder.Build();
             TContext context = Activator.CreateInstance(typeof(TContext), firestoreDb) as TContext;
             context.GetType()
                 .GetRuntimeProperties()
