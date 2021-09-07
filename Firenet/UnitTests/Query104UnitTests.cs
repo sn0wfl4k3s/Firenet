@@ -22,6 +22,7 @@ namespace UnitTests
         [Fact(DisplayName = "Query com All")]
         public void AllQuery()
         {
+            System.Diagnostics.Debug.WriteLine("teste");
             bool todosSaoAdmin = _context.Users.AsQueryable().All(u => u.IsAdmin);
             Assert.False(todosSaoAdmin);
 

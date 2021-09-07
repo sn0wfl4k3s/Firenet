@@ -14,16 +14,16 @@ namespace Firenet
                 p.GetValue(entity) is not null &&
                 ((DateTime)p.GetValue(entity)).Kind != DateTimeKind.Utc;
 
-            entity
-                .GetType()
-                .GetRuntimeProperties()
-                .AsParallel()
-                .Where(ValidProperty)
-                .ForAll(p =>
-                {
-                    var value = (DateTime)p.GetValue(entity);
-                    p.SetValue(entity, DateTime.SpecifyKind(value, DateTimeKind.Utc));
-                });
+            //entity
+            //    .GetType()
+            //    .GetRuntimeProperties()
+            //    .AsParallel()
+            //    .Where(ValidProperty)
+            //    .ForAll(p =>
+            //    {
+            //        var value = (DateTime)p.GetValue(entity);
+            //        p.SetValue(entity, DateTime.SpecifyKind(value, DateTimeKind.Utc));
+            //    });
 
             return entity;
         }

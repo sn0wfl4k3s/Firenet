@@ -17,6 +17,15 @@ namespace Firenet
         internal Action<string> WarningLogger => _warningLogger;
         internal ConverterRegistry Converters => _converters;
 
+        public FireOption()
+        {
+            _converters = new ConverterRegistry
+            {
+                new DefaultGuidConverter(),
+                new DefaultDatetimeConverter(),
+                new DefaultNullableDatetimeConverter(),
+            };
+        }
 
 
         /// <summary>
@@ -25,10 +34,8 @@ namespace Firenet
         /// <typeparam name="T"></typeparam>
         /// <param name="converter"></param>
         /// <returns></returns>
-        public FireOption AddConverter<T>(IFirestoreConverter<T> converter)
-            where T : unmanaged
+        public FireOption AddConverter<T>(IFirestoreConverter<T> converter) where T : unmanaged
         {
-            _converters ??= new ConverterRegistry();
             _converters.Add(converter);
             return this;
         }

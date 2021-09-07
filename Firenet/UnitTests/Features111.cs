@@ -1,7 +1,6 @@
 ﻿using Firenet;
-using Google.Cloud.Firestore;
 using System;
-using System.Globalization;
+using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,15 +39,17 @@ namespace UnitTests
             using var context = FireContextBuilder<AppDbContext2>
                 .Build(options => options
                     .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
-                    .AddConverter(new GuidConverter())
-                    .EnableWarningLogger(_output.WriteLine)
-                    );
+                    //.AddConverter(new GuidConverter())
+                    .EnableWarningLogger(_output.WriteLine));
 
-            var user = new User2 { Hash = Guid.NewGuid() };
-            context.Users.Add(user);
+            context.Users.DeleteRange(context.Users.ToArray().Select(u => u.Id));
+
+            var user1 = new User2 { Hash = Guid.NewGuid(), Type = Type.Admin };
+            var user2 = new User2 { Hash = Guid.NewGuid(), Type = Type.Default };
+            context.Users.Add(user1);
             var users = context.Users.AsQueryable().ToArray();
             Assert.Single(users);
-            context.Users.Add(user);
+            context.Users.Add(user2);
             users = context.Users.AsQueryable().ToArray();
             Assert.Equal(2, users.Length);
         }

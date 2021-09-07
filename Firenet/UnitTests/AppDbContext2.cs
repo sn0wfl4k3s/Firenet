@@ -4,11 +4,10 @@ using System;
 
 namespace UnitTests
 {
-
-    public class GuidConverter : IFirestoreConverter<Guid>
+    public enum Type
     {
-        public Guid FromFirestore(object value) => Guid.Parse(value.ToString());
-        public object ToFirestore(Guid value) => value.ToString();
+        Admin,
+        Default
     }
 
     [FirestoreData]
@@ -19,6 +18,9 @@ namespace UnitTests
 
         [FirestoreProperty]
         public Guid Hash { get; set; }
+
+        [FirestoreProperty]
+        public Type Type { get; set; }
     }
 
     public class AppDbContext2 : FireContext
