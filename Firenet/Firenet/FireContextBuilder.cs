@@ -33,7 +33,8 @@ namespace Firenet
         private static TContext CreateInstance(FireOption options)
         {
             TContext context = Activator.CreateInstance<TContext>();
-            FirestoreDbBuilder builder = new() {
+            FirestoreDbBuilder builder = new()
+            {
                 ProjectId = options.ProjectId,
                 WarningLogger = options.WarningLogger,
                 CredentialsPath = options.JsonCredentialsPath,

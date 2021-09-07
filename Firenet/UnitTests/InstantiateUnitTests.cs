@@ -16,7 +16,7 @@ namespace UnitTests
             });
 
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", FirestoreDatabase.CredentialsPath);
-            
+
             using var context = FireContextBuilder<AppDbContext>.Build();
 
             Assert.NotNull(context);
@@ -41,7 +41,7 @@ namespace UnitTests
             var provider = services.BuildServiceProvider();
 
             using var context = provider.GetService<AppDbContext>();
-            
+
             Assert.NotNull(context);
         }
     }

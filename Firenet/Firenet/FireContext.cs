@@ -7,11 +7,12 @@ namespace Firenet
     public abstract class FireContext : IAtomicTransaction, IDisposable
     {
         private FirestoreDb _firestoreDb;
-        
+
         public FirestoreDb FirestoreDb
         {
             get => _firestoreDb;
-            set {
+            set
+            {
                 if (_firestoreDb is null)
                     _firestoreDb = value;
             }

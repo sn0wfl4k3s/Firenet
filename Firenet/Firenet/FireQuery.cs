@@ -138,7 +138,7 @@ namespace Firenet
                 entities = ToDocuments()
                     .Select(d => d.ToDictionary())
                     .Select(d => d.ToDictionary(
-                        dic => beforeProps.First(p => dic.Key.Equals(p.Name) || dic.Key.Equals(p?.GetCustomAttribute<FirestorePropertyAttribute>()?.Name)), 
+                        dic => beforeProps.First(p => dic.Key.Equals(p.Name) || dic.Key.Equals(p?.GetCustomAttribute<FirestorePropertyAttribute>()?.Name)),
                         dic => dic.Value))
                     .Select(dic =>
                     {
