@@ -25,7 +25,11 @@ namespace UnitTests
 
     public class AppDbContext2 : FireContext
     {
-        public AppDbContext2(FirestoreDb firestoreDb) : base(firestoreDb)
+        public AppDbContext2()
+        {
+        }
+
+        public AppDbContext2(Action<FireOption> options) : base(options)
         {
         }
 

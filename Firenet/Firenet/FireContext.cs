@@ -1,5 +1,8 @@
 ﻿using Google.Cloud.Firestore;
 using System;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Firenet
@@ -8,20 +11,72 @@ namespace Firenet
     {
         private FirestoreDb _firestoreDb;
 
-        public FirestoreDb FirestoreDb { get => _firestoreDb; }
-
-        protected FireContext(FirestoreDb firestoreDb)
+        /// <summary>
+        /// Instantiated the context with the environment variable 'GOOGLE_APPLICATION_CREDENTIALS' 
+        /// which should previusly configured.
+        /// </summary>
+        protected FireContext()
         {
-            _firestoreDb = firestoreDb;
+            FireOption opts = new();
+            opts.GetFromGoogleEnvironmentVariable();
+            _firestoreDb = InstantionFirestore(opts);
+            InstantiationCollections(_firestoreDb);
         }
 
+        /// <summary>
+        /// Instantiated the context with the <paramref name="options"/>.
+        /// </summary>
+        /// <param name="options"></param>
+        protected FireContext(Action<FireOption> options)
+        {
+            FireOption opts = new();
+            options.Invoke(opts);
+            _firestoreDb = InstantionFirestore(opts);
+            InstantiationCollections(_firestoreDb);
+        }
+        
 
         #region AtomicTransaction Implementation
         public virtual async Task RunTransactionAsync(Func<Transaction, Task> callback)
-            => await FirestoreDb.RunTransactionAsync(callback);
+            => await _firestoreDb.RunTransactionAsync(callback);
 
         public virtual async Task<R> RunTransactionAsync<R>(Func<Transaction, Task<R>> callback)
-            => await FirestoreDb.RunTransactionAsync(callback);
+            => await _firestoreDb.RunTransactionAsync(callback);
+        #endregion
+
+        #region Essencials Methods
+        private static FirestoreDb InstantionFirestore(FireOption options)
+        {
+            FirestoreDbBuilder builder = new()
+            {
+                ProjectId = options.ProjectId,
+                WarningLogger = options.WarningLogger,
+                CredentialsPath = options.JsonCredentialsPath,
+                ConverterRegistry = options.Converters,
+            };
+
+            return builder.Build();
+        }
+        private void InstantiationCollections(FirestoreDb firestoreDb)
+        {
+            GetType()
+                .GetRuntimeProperties()
+                .Where(p => p.GetValue(this) is null && Regex.IsMatch(p.PropertyType.FullName, @"Firenet\.?(IF|F)?ireCollection"))
+                .Select(p =>
+                {
+                    string entityClassAssemblyName = Regex.Replace(p.PropertyType.AssemblyQualifiedName, @".*?\[\[| |\]\].*", string.Empty);
+                    Type entityType = Type.GetType(entityClassAssemblyName);
+                    Type collection = typeof(FireCollection<>).MakeGenericType(entityType);
+                    string collectionName = GetType()
+                        .GetProperty(p.Name)
+                        .GetCustomAttributes(typeof(CollectionNameAttribute), false)
+                        .FirstOrDefault() is not CollectionNameAttribute annotation ? p.Name : annotation.Name;
+                    object instance = Activator.CreateInstance(collection, firestoreDb, collectionName);
+                    return (name: p.Name, value: instance);
+                })
+                .ToList()
+                .ForEach(p => GetType().GetProperty(p.name).SetValue(this, p.value));
+        }
         #endregion
 
         public void Dispose() => GC.SuppressFinalize(this);

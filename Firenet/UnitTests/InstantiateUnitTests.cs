@@ -12,12 +12,12 @@ namespace UnitTests
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                using var context = FireContextBuilder<AppDbContext>.Build();
+                using var context = new AppDbContext();
             });
 
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", FirestoreDatabase.CredentialsPath);
 
-            using var context = FireContextBuilder<AppDbContext>.Build();
+            using var context = new AppDbContext();
 
             Assert.NotNull(context);
         }

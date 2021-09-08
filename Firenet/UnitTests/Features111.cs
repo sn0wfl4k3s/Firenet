@@ -21,8 +21,7 @@ namespace UnitTests
         [Fact(DisplayName = "Query com logger")]
         public void WarningLog()
         {
-            using var context = FireContextBuilder<AppDbContext>
-                .Build(options => options
+            using var context = new AppDbContext(options => options
                     .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
                     .EnableWarningLogger(_output.WriteLine));
 
@@ -39,10 +38,8 @@ namespace UnitTests
         [Fact(DisplayName = "Converter registry")]
         public void ConverterRegistry()
         {
-            using var context = FireContextBuilder<AppDbContext2>
-                .Build(options => options
+            using var context = new AppDbContext2(options => options
                     .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
-                    //.AddConverter(new GuidConverter())
                     .EnableWarningLogger(_output.WriteLine));
 
             var ids = context.Users.AsQueryable().Select(u => u.Id).ToArray();
@@ -61,8 +58,7 @@ namespace UnitTests
         [Fact(DisplayName = "Select with Document Id")]
         public void SelectDocumentId ()
         {
-            using var context = FireContextBuilder<AppDbContext>
-                .Build(options => options
+            using var context = new AppDbContext(options => options
                     .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
                     .EnableWarningLogger(_output.WriteLine));
 
@@ -77,11 +73,25 @@ namespace UnitTests
         [Fact(DisplayName = "Select with Created")]
         public void SelectCreated()
         {
-            using var context = FireContextBuilder<AppDbContext>
-                .Build(options => options
+            using var context = new AppDbContext(options => options
                     .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
                     .EnableWarningLogger(_output.WriteLine));
 
+
+            int[] userids = context.Users.AsQueryable().Select(u => u.Release.Value.Year).ToArray();
+            Assert.Contains(2020, userids);
+            Assert.Contains(2019, userids);
+            Assert.Contains(2018, userids);
+            Assert.Contains(2017, userids);
+            Assert.Contains(2016, userids);
+        }
+
+        [Fact(DisplayName = "teste de instanciação construtor")]
+        public void SelectCreated2()
+        {
+            using var context = new AppDbContext(options => options
+                    .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
+                    .EnableWarningLogger(_output.WriteLine));
 
             int[] userids = context.Users.AsQueryable().Select(u => u.Release.Value.Year).ToArray();
             Assert.Contains(2020, userids);

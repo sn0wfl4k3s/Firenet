@@ -1,12 +1,16 @@
 ﻿using Firenet;
-using Google.Cloud.Firestore;
+using System;
 using UnitTests.Models;
 
 namespace UnitTests
 {
     public class AppDbContext : FireContext
     {
-        public AppDbContext(FirestoreDb firestoreDb) : base(firestoreDb)
+        public AppDbContext()
+        {
+        }
+
+        public AppDbContext(Action<FireOption> options) : base(options)
         {
         }
 

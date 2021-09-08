@@ -1,5 +1,4 @@
-﻿using Firenet;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnitTests.Models;
@@ -14,7 +13,7 @@ namespace UnitTests
 
         public FirestoreDatabase()
         {
-            Context = FireContextBuilder<AppDbContext>.Build(o => o.SetJsonCredentialsPath(CredentialsPath));
+            Context = new AppDbContext(options => options.SetJsonCredentialsPath(CredentialsPath));
         }
 
         public void LoadAllData()
