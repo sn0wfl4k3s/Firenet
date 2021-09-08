@@ -53,5 +53,37 @@ namespace UnitTests
             users = context.Users.AsQueryable().ToArray();
             Assert.Equal(2, users.Length);
         }
+
+        [Fact(DisplayName = "Select with Document Id")]
+        public void SelectDocumentId ()
+        {
+            using var context = FireContextBuilder<AppDbContext>
+                .Build(options => options
+                    .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
+                    .EnableWarningLogger(_output.WriteLine));
+
+            string[] userids = context.Users.AsQueryable().Select(u => u.Id).ToArray();
+            Assert.NotNull(userids[0]);
+            Assert.NotNull(userids[1]);
+            Assert.NotNull(userids[2]);
+            Assert.NotNull(userids[3]);
+            Assert.NotNull(userids[4]);
+        }
+
+        [Fact(DisplayName = "Select with Created")]
+        public void SelectCreated()
+        {
+            using var context = FireContextBuilder<AppDbContext>
+                .Build(options => options
+                    .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
+                    .EnableWarningLogger(_output.WriteLine));
+
+            int[] userids = context.Users.AsQueryable().Select(u => u.Release.Value.Year).ToArray();
+            Assert.True(userids[0] <= DateTime.UtcNow.Year);
+            Assert.True(userids[1] <= DateTime.UtcNow.Year);
+            Assert.True(userids[2] <= DateTime.UtcNow.Year);
+            Assert.True(userids[3] <= DateTime.UtcNow.Year);
+            Assert.True(userids[4] <= DateTime.UtcNow.Year);
+        }
     }
 }

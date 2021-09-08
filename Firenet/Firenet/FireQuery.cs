@@ -20,8 +20,8 @@ namespace Firenet
         {
             _sourceQuery = query;
             _queries = new HashSet<Query>();
-            _documentComparer = new DocumentSnapshotComparer();
             _options = new FireQueryOptions();
+            _documentComparer = new DocumentSnapshotComparer();
         }
 
         public FireQuery(Query query, HashSet<Query> queries, FireQueryOptions options)
@@ -128,30 +128,14 @@ namespace Firenet
         public IEnumerable<TEntity> ToEnumerable()
         {
             IEnumerable<TEntity> entities;
-            if (typeof(TEntity).IsPrimitive ||
-                typeof(TEntity) == typeof(string) ||
-                typeof(TEntity).IsEnum ||
-                typeof(TEntity).IsArray ||
-                typeof(TEntity).IsValueType)
+            if (typeof(TEntity) != _options.OriginType)
             {
-                PropertyInfo[] beforeProps = _options.SelectOptions[0].Before.GetProperties();
+                MethodInfo convertTo = typeof(DocumentSnapshot)
+                    .GetMethod("ConvertTo")
+                    .MakeGenericMethod(_options.OriginType);
                 entities = ToDocuments()
-                    .Select(d => d.ToDictionary())
-                    .Select(d => d.ToDictionary(
-                        dic => beforeProps.First(p => dic.Key.Equals(p.Name) || dic.Key.Equals(p?.GetCustomAttribute<FirestorePropertyAttribute>()?.Name)),
-                        dic => dic.Value))
-                    .Select(dic =>
-                    {
-                        object param = Activator.CreateInstance(_options.SelectOptions[0].Before);
-                        param
-                            .GetType()
-                            .GetProperties()
-                            .Where(p => dic.ContainsKey(p))
-                            .Select(p => (name: p.Name, value: Convert.ChangeType(dic.First(d => d.Key.Name.Equals(p.Name)).Value, p.PropertyType)))
-                            .AsParallel()
-                            .ForAll(p => param.GetType().GetProperty(p.name).SetValue(param, p.value));
-                        return (TEntity)_options.SelectOptions.Aggregate(param, (p, select) => select.Expression.Compile().DynamicInvoke(p));
-                    });
+                    .Select(d => convertTo.Invoke(d, null))
+                    .Select(e => (TEntity)_options.SelectOptions.Aggregate(e, (p, select) => select.Expression.Compile().DynamicInvoke(p)));
             }
             else
                 entities = ToDocuments().Select(d => d.ConvertTo<TEntity>());

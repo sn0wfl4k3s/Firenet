@@ -10,6 +10,7 @@ namespace Firenet
         public string OrderByDescendingName { get; set; }
         public string[] Properties { get; set; }
         public List<SelectOptions> SelectOptions { get; set; } = new();
+        public Type OriginType => SelectOptions[0].Before;
     }
 
     internal class SelectOptions
