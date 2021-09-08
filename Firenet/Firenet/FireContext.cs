@@ -8,15 +8,13 @@ namespace Firenet
     {
         private FirestoreDb _firestoreDb;
 
-        public FirestoreDb FirestoreDb
+        public FirestoreDb FirestoreDb { get => _firestoreDb; }
+
+        protected FireContext(FirestoreDb firestoreDb)
         {
-            get => _firestoreDb;
-            set
-            {
-                if (_firestoreDb is null)
-                    _firestoreDb = value;
-            }
+            _firestoreDb = firestoreDb;
         }
+
 
         #region AtomicTransaction Implementation
         public virtual async Task RunTransactionAsync(Func<Transaction, Task> callback)

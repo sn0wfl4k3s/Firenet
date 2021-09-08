@@ -32,7 +32,6 @@ namespace Firenet
 
         private static TContext CreateInstance(FireOption options)
         {
-            TContext context = Activator.CreateInstance<TContext>();
             FirestoreDbBuilder builder = new()
             {
                 ProjectId = options.ProjectId,
@@ -40,7 +39,7 @@ namespace Firenet
                 CredentialsPath = options.JsonCredentialsPath,
                 ConverterRegistry = options.Converters,
             };
-            context.FirestoreDb = builder.Build();
+            TContext context = Activator.CreateInstance(typeof(TContext), builder.Build()) as TContext;
             context.GetType()
                 .GetRuntimeProperties()
                 .Where(p => p.GetValue(context) is null && Regex.IsMatch(p.PropertyType.FullName, @"Firenet\.?(IF|F)?ireCollection"))

@@ -82,12 +82,13 @@ namespace UnitTests
                     .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
                     .EnableWarningLogger(_output.WriteLine));
 
+
             int[] userids = context.Users.AsQueryable().Select(u => u.Release.Value.Year).ToArray();
-            Assert.True(userids[0] <= DateTime.UtcNow.Year);
-            Assert.True(userids[1] <= DateTime.UtcNow.Year);
-            Assert.True(userids[2] <= DateTime.UtcNow.Year);
-            Assert.True(userids[3] <= DateTime.UtcNow.Year);
-            Assert.True(userids[4] <= DateTime.UtcNow.Year);
+            Assert.Contains(2020, userids);
+            Assert.Contains(2019, userids);
+            Assert.Contains(2018, userids);
+            Assert.Contains(2017, userids);
+            Assert.Contains(2016, userids);
         }
     }
 }

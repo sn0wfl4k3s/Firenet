@@ -25,6 +25,10 @@ namespace UnitTests
 
     public class AppDbContext2 : FireContext
     {
+        public AppDbContext2(FirestoreDb firestoreDb) : base(firestoreDb)
+        {
+        }
+
         [CollectionName("Others")]
         public IFireCollection<User2> Users { get; set; }
     }
