@@ -9,10 +9,13 @@ namespace UnitTests
     public class Features111 : IClassFixture<FirestoreDatabase>
     {
         public readonly ITestOutputHelper _output;
+        public readonly FirestoreDatabase _firestore;
 
         public Features111(FirestoreDatabase firestore, ITestOutputHelper output)
         {
             _output = output;
+            _firestore = firestore;
+            _firestore.LoadAllData();
         }
 
         [Fact(DisplayName = "Query com logger")]
@@ -42,7 +45,8 @@ namespace UnitTests
                     //.AddConverter(new GuidConverter())
                     .EnableWarningLogger(_output.WriteLine));
 
-            context.Users.DeleteRange(context.Users.ToArray().Select(u => u.Id));
+            var ids = context.Users.AsQueryable().Select(u => u.Id).ToArray();
+            context.Users.DeleteRange(ids);
 
             var user1 = new User2 { Hash = Guid.NewGuid(), Type = Type.Admin };
             var user2 = new User2 { Hash = Guid.NewGuid(), Type = Type.Default };

@@ -11,6 +11,7 @@ namespace Firenet
         public string[] Properties { get; set; }
         public List<SelectOptions> SelectOptions { get; set; } = new();
         public Type OriginType => SelectOptions[0].Before;
+        public bool HasSelect => SelectOptions.Count > 0;
     }
 
     internal class SelectOptions

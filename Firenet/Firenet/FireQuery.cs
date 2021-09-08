@@ -128,7 +128,7 @@ namespace Firenet
         public IEnumerable<TEntity> ToEnumerable()
         {
             IEnumerable<TEntity> entities;
-            if (typeof(TEntity) != _options.OriginType)
+            if (_options.HasSelect)
             {
                 MethodInfo convertTo = typeof(DocumentSnapshot)
                     .GetMethod("ConvertTo")
