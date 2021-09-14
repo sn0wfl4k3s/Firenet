@@ -2,11 +2,11 @@
 
 namespace UnitTests
 {
-    public class Query103UnitTests : IClassFixture<FirestoreDatabase>
+    public class V103UnitTests : IClassFixture<FirestoreDatabase>
     {
         private readonly AppDbContext _context;
 
-        public Query103UnitTests(FirestoreDatabase firestore)
+        public V103UnitTests(FirestoreDatabase firestore)
         {
             _context = firestore.Context;
             firestore.LoadAllData();

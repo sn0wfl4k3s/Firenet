@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Firenet
-{
+{   
     public abstract class FireContext : IAtomicTransaction, IDisposable
     {
         private FirestoreDb _firestoreDb;
@@ -17,24 +17,22 @@ namespace Firenet
         /// </summary>
         protected FireContext()
         {
-            FireOption opts = new();
-            opts.GetFromGoogleEnvironmentVariable();
-            _firestoreDb = InstantionFirestore(opts);
-            InstantiationCollections(_firestoreDb);
+            Construct(OnConfiguring);
         }
 
         /// <summary>
-        /// Instantiated the context with the <paramref name="options"/>.
+        /// Instantiated the context with the <paramref name="configuring"/>.
         /// </summary>
-        /// <param name="options"></param>
-        protected FireContext(Action<FireOption> options)
+        /// <param name="configuring"></param>
+        protected FireContext(Action<FireOption> configuring)
         {
-            FireOption opts = new();
-            options.Invoke(opts);
-            _firestoreDb = InstantionFirestore(opts);
-            InstantiationCollections(_firestoreDb);
+            Construct(configuring);
         }
-        
+
+        protected virtual void OnConfiguring(FireOption options) 
+        {
+            options.GetFromGoogleEnvironmentVariable();
+        }
 
         #region AtomicTransaction Implementation
         public virtual async Task RunTransactionAsync(Func<Transaction, Task> callback)
@@ -44,7 +42,14 @@ namespace Firenet
             => await _firestoreDb.RunTransactionAsync(callback);
         #endregion
 
-        #region Essencials Methods
+        #region Private Essencials Methods
+        private void Construct(Action<FireOption> configuring)
+        {
+            FireOption options = new();
+            configuring.Invoke(options);
+            _firestoreDb = InstantionFirestore(options);
+            InstantiationCollections(_firestoreDb);
+        }
         private static FirestoreDb InstantionFirestore(FireOption options)
         {
             FirestoreDbBuilder builder = new()

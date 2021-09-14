@@ -13,7 +13,7 @@ namespace UnitTests
 
         public FirestoreDatabase()
         {
-            Context = new AppDbContext(options => options.SetJsonCredentialsPath(CredentialsPath));
+            Context = new AppDbContext();
         }
 
         public void LoadAllData()

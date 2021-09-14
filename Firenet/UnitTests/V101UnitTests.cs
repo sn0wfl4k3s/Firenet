@@ -5,11 +5,11 @@ using Xunit;
 
 namespace UnitTests
 {
-    public class CommandUnitTests : IClassFixture<FirestoreDatabase>
+    public class V101UnitTests : IClassFixture<FirestoreDatabase>
     {
         private readonly AppDbContext _context;
 
-        public CommandUnitTests(FirestoreDatabase firestore)
+        public V101UnitTests(FirestoreDatabase firestore)
         {
             _context = firestore.Context;
         }

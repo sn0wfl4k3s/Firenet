@@ -1,17 +1,15 @@
-﻿using Firenet;
-using System;
-using System.Linq;
+﻿using System;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace UnitTests
 {
-    public class Features111 : IClassFixture<FirestoreDatabase>
+    public class V110UnitTests : IClassFixture<FirestoreDatabase>
     {
         public readonly ITestOutputHelper _output;
         public readonly FirestoreDatabase _firestore;
 
-        public Features111(FirestoreDatabase firestore, ITestOutputHelper output)
+        public V110UnitTests(FirestoreDatabase firestore, ITestOutputHelper output)
         {
             _output = output;
             _firestore = firestore;
@@ -21,9 +19,7 @@ namespace UnitTests
         [Fact(DisplayName = "Query com logger")]
         public void WarningLog()
         {
-            using var context = new AppDbContext(options => options
-                    .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
-                    .EnableWarningLogger(_output.WriteLine));
+            using var context = new AppDbContext();
 
             Assert.Throws<AggregateException>(() =>
             {
@@ -56,11 +52,9 @@ namespace UnitTests
         }
 
         [Fact(DisplayName = "Select with Document Id")]
-        public void SelectDocumentId ()
+        public void SelectDocumentId()
         {
-            using var context = new AppDbContext(options => options
-                    .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
-                    .EnableWarningLogger(_output.WriteLine));
+            using var context = new AppDbContext();
 
             string[] userids = context.Users.AsQueryable().Select(u => u.Id).ToArray();
             Assert.NotNull(userids[0]);
@@ -73,9 +67,7 @@ namespace UnitTests
         [Fact(DisplayName = "Select with Created")]
         public void SelectCreated()
         {
-            using var context = new AppDbContext(options => options
-                    .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
-                    .EnableWarningLogger(_output.WriteLine));
+            using var context = new AppDbContext();
 
 
             int[] userids = context.Users.AsQueryable().Select(u => u.Release.Value.Year).ToArray();
@@ -89,9 +81,7 @@ namespace UnitTests
         [Fact(DisplayName = "teste de instanciação construtor")]
         public void SelectCreated2()
         {
-            using var context = new AppDbContext(options => options
-                    .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
-                    .EnableWarningLogger(_output.WriteLine));
+            using var context = new AppDbContext();
 
             int[] userids = context.Users.AsQueryable().Select(u => u.Release.Value.Year).ToArray();
             Assert.Contains(2020, userids);
