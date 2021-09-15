@@ -8,6 +8,7 @@ namespace UnitTests
     public class FirestoreDatabase : IDisposable
     {
         public static readonly string CredentialsPath = $@"C:\Users\{Environment.UserName}\Downloads\firebase-admin.json";
+        public static readonly string VariableGoogle = "GOOGLE_APPLICATION_CREDENTIALS";
 
         public AppDbContext Context { get; private set; }
 

@@ -29,9 +29,13 @@ namespace Firenet
             Construct(configuring);
         }
 
+        /// <summary>
+        /// Set options to build your firecontext with high configuration priority.
+        /// </summary>
+        /// <param name="options"></param>
         protected virtual void OnConfiguring(FireOption options) 
         {
-            options.GetFromGoogleEnvironmentVariable();
+            options.UseGoogleEnvironmentVariable();
         }
 
         #region AtomicTransaction Implementation

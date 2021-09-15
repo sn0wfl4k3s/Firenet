@@ -7,12 +7,11 @@ namespace Firenet
 {
     public class FireOption
     {
-        private string _projectId;
         private string _jsonCredentialsPath;
         private Action<string> _warningLogger;
         private ConverterRegistry _converters;
 
-        internal string ProjectId => _projectId;
+        internal string ProjectId => GetProjectId();
         internal string JsonCredentialsPath => _jsonCredentialsPath;
         internal Action<string> WarningLogger => _warningLogger;
         internal ConverterRegistry Converters => _converters;
@@ -67,16 +66,13 @@ namespace Firenet
         /// </summary>
         /// <param name="jsonCredentialsPath"></param>
         /// <returns></returns>
-        public FireOption SetJsonCredentialsPath(string jsonCredentialsPath)
+        public FireOption SetJsonCredentialspath(string jsonCredentialsPath)
         {
             if (string.IsNullOrEmpty(jsonCredentialsPath))
                 throw new ArgumentNullException(nameof(jsonCredentialsPath));
             if (!File.Exists(jsonCredentialsPath))
                 throw new FileNotFoundException("Credentials file not found.");
             _jsonCredentialsPath = jsonCredentialsPath;
-            _projectId = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(_jsonCredentialsPath)).ProjectId;
-            if (string.IsNullOrEmpty(_projectId))
-                throw new ArgumentNullException(nameof(ProjectId));
             return this;
         }
 
@@ -84,17 +80,18 @@ namespace Firenet
         /// Get the credentials from the environment variable 'GOOGLE_APPLICATION_CREDENTIALS' which should previusly configured.
         /// </summary>
         /// <returns></returns>
-        public FireOption GetFromGoogleEnvironmentVariable()
+        public FireOption UseGoogleEnvironmentVariable()
         {
             _jsonCredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
             if (string.IsNullOrEmpty(_jsonCredentialsPath))
                 throw new ArgumentNullException("Has no 'GOOGLE_APPLICATION_CREDENTIALS' environment variable configured.");
             if (!File.Exists(_jsonCredentialsPath))
                 throw new FileNotFoundException("Credentials file not found.");
-            _projectId = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(_jsonCredentialsPath)).ProjectId;
-            if (string.IsNullOrEmpty(_projectId))
-                throw new ArgumentNullException(nameof(ProjectId));
             return this;
         }
+
+        private string GetProjectId ()
+            => JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(_jsonCredentialsPath)).ProjectId ??
+                throw new ArgumentNullException(nameof(ProjectId));
     }
 }
