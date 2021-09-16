@@ -24,6 +24,8 @@ Put the data annotations in the class model and properties:
 
 Create a class that implement 'FireContext' and create the fireCollections that represents the models that you want store:  
 ![image](https://user-images.githubusercontent.com/30809620/133532334-30caada3-b63e-48f2-a7f8-7c6a45de5a89.png)  
+Or:  
+![image](https://user-images.githubusercontent.com/30809620/133536201-7821ae8e-7b2d-4c06-b384-c1fa121b91e1.png)  
 
 You can put data annotation 'CollectionName' for informate the name of collection. If it doesn't have collection name data annotation, the name of collection will be the name of object IFireCollection ('Users' in this example).  
 ![image](https://user-images.githubusercontent.com/30809620/120899679-4df67400-c607-11eb-932b-b6588bc39002.png)
