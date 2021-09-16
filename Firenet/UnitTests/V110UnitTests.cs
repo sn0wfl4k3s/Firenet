@@ -35,7 +35,7 @@ namespace UnitTests
         public void ConverterRegistry()
         {
             using var context = new AppDbContext2(options => options
-                    .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
+                    .UseJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
                     .EnableWarningLogger(_output.WriteLine));
 
             var ids = context.Users.AsQueryable().Select(u => u.Id).ToArray();

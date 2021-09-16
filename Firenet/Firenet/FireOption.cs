@@ -60,13 +60,29 @@ namespace Firenet
             return this;
         }
 
+        /// <summary>
+        /// Set the name of credentials json file.
+        /// OBS: The folder of file is defined for the root domain path of assemblies where the application is running.
+        /// </summary>
+        /// <param name="jsonCredentialsFilename"></param>
+        /// <returns></returns>
+        public FireOption UseJsonCredentialsFile(string jsonCredentialsFilename)
+        {
+            if (string.IsNullOrEmpty(jsonCredentialsFilename))
+                throw new ArgumentNullException(nameof(jsonCredentialsFilename));
+            string jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, jsonCredentialsFilename);
+            if (!File.Exists(jsonFilePath))
+                throw new FileNotFoundException("Credentials file not found.");
+            _jsonCredentialsPath = jsonFilePath;
+            return this;
+        }
 
         /// <summary>
         /// Set the path of credentials json file.
         /// </summary>
         /// <param name="jsonCredentialsPath"></param>
         /// <returns></returns>
-        public FireOption SetJsonCredentialspath(string jsonCredentialsPath)
+        public FireOption UseJsonCredentialsPath(string jsonCredentialsPath)
         {
             if (string.IsNullOrEmpty(jsonCredentialsPath))
                 throw new ArgumentNullException(nameof(jsonCredentialsPath));

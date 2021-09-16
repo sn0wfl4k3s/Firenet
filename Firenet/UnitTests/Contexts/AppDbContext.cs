@@ -11,7 +11,7 @@ namespace UnitTests
         protected override void OnConfiguring(FireOption options)
         {
             options
-                .SetJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
+                .UseJsonCredentialsPath(FirestoreDatabase.CredentialsPath)
                 .EnableWarningLogger();
         }
     }
