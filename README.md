@@ -10,7 +10,7 @@ Firestore orm for .net applications. A simple easy way to manipulate firestore d
 Download by dotnet cli:  
 
 ```   
-  Install-Package Firenet 1.2.0
+  Install-Package Firenet -Version 1.2.0
 ```
 ## Release notes
 - Inclusion of default converter for guid and datetime types into domain model, now is possible use freely this types.
