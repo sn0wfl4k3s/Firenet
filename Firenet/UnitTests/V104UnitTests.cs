@@ -2,11 +2,11 @@
 
 namespace UnitTests
 {
-    public class Query104UnitTests : IClassFixture<FirestoreDatabase>
+    public class V104UnitTests : IClassFixture<FirestoreDatabase>
     {
         private readonly AppDbContext _context;
 
-        public Query104UnitTests(FirestoreDatabase firestore)
+        public V104UnitTests(FirestoreDatabase firestore)
         {
             _context = firestore.Context;
             firestore.LoadAllData();
@@ -22,6 +22,7 @@ namespace UnitTests
         [Fact(DisplayName = "Query com All")]
         public void AllQuery()
         {
+            System.Diagnostics.Debug.WriteLine("teste");
             bool todosSaoAdmin = _context.Users.AsQueryable().All(u => u.IsAdmin);
             Assert.False(todosSaoAdmin);
 

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Google.Cloud.Firestore;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 
@@ -6,30 +7,88 @@ namespace Firenet
 {
     public class FireOption
     {
-        private string _projectId;
         private string _jsonCredentialsPath;
-        private bool _isFromEnviromentVariable;
+        private Action<string> _warningLogger;
+        private ConverterRegistry _converters;
 
-        public string ProjectId => _projectId;
-        public string JsonCredentialsPath => _jsonCredentialsPath;
-        public bool IsFromEnviromentVariable => _isFromEnviromentVariable;
+        internal string ProjectId => GetProjectId();
+        internal string JsonCredentialsPath => _jsonCredentialsPath;
+        internal Action<string> WarningLogger => _warningLogger;
+        internal ConverterRegistry Converters => _converters;
+
+        public FireOption()
+        {
+            _converters = new ConverterRegistry
+            {
+                new DefaultGuidConverter(),
+                new DefaultDatetimeConverter(),
+                new DefaultNullableDatetimeConverter(),
+            };
+        }
+
+
+        /// <summary>
+        /// Add a converter that implement IFirestoreConverter<T> where T is any type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        public FireOption AddConverter<T>(IFirestoreConverter<T> converter) where T : unmanaged
+        {
+            _converters.Add(converter);
+            return this;
+        }
+
+        /// <summary>
+        /// Enable the logger warning using a action defined.
+        /// </summary>
+        /// <param name="logger">action for message warning from firestore.</param>
+        /// <returns></returns>
+        public FireOption EnableWarningLogger(Action<string> logger)
+        {
+            _warningLogger = logger;
+            return this;
+        }
+
+        /// <summary>
+        /// Enable the logger warning using the writeline method from System.Diagnostics.Debug namespace.
+        /// </summary>
+        /// <returns></returns>
+        public FireOption EnableWarningLogger()
+        {
+            _warningLogger = message => System.Diagnostics.Debug.WriteLine(message);
+            return this;
+        }
+
+        /// <summary>
+        /// Set the name of credentials json file.
+        /// OBS: The folder of file is defined for the root domain path of assemblies where the application is running.
+        /// </summary>
+        /// <param name="jsonCredentialsFilename"></param>
+        /// <returns></returns>
+        public FireOption UseJsonCredentialsFile(string jsonCredentialsFilename)
+        {
+            if (string.IsNullOrEmpty(jsonCredentialsFilename))
+                throw new ArgumentNullException(nameof(jsonCredentialsFilename));
+            string jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, jsonCredentialsFilename);
+            if (!File.Exists(jsonFilePath))
+                throw new FileNotFoundException("Credentials file not found.");
+            _jsonCredentialsPath = jsonFilePath;
+            return this;
+        }
 
         /// <summary>
         /// Set the path of credentials json file.
         /// </summary>
         /// <param name="jsonCredentialsPath"></param>
         /// <returns></returns>
-        public FireOption SetJsonCredentialsPath (string jsonCredentialsPath)
+        public FireOption UseJsonCredentialsPath(string jsonCredentialsPath)
         {
             if (string.IsNullOrEmpty(jsonCredentialsPath))
-                throw new ArgumentNullException(nameof(JsonCredentialsPath));
+                throw new ArgumentNullException(nameof(jsonCredentialsPath));
             if (!File.Exists(jsonCredentialsPath))
-                throw new FileNotFoundException(jsonCredentialsPath);
+                throw new FileNotFoundException("Credentials file not found.");
             _jsonCredentialsPath = jsonCredentialsPath;
-            _projectId = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(_jsonCredentialsPath)).ProjectId;
-            if (string.IsNullOrEmpty(_projectId))
-                throw new ArgumentNullException(nameof(ProjectId));
-            _isFromEnviromentVariable = false;
             return this;
         }
 
@@ -37,18 +96,18 @@ namespace Firenet
         /// Get the credentials from the environment variable 'GOOGLE_APPLICATION_CREDENTIALS' which should previusly configured.
         /// </summary>
         /// <returns></returns>
-        public FireOption GetFromGoogleEnvironmentVariable()
+        public FireOption UseGoogleEnvironmentVariable()
         {
             _jsonCredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
             if (string.IsNullOrEmpty(_jsonCredentialsPath))
-                throw new ArgumentNullException(nameof(JsonCredentialsPath));
+                throw new ArgumentNullException("Has no 'GOOGLE_APPLICATION_CREDENTIALS' environment variable configured.");
             if (!File.Exists(_jsonCredentialsPath))
-                throw new FileNotFoundException(JsonCredentialsPath);
-            _projectId = JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(_jsonCredentialsPath)).ProjectId;
-            if (string.IsNullOrEmpty(_projectId))
-                throw new ArgumentNullException(nameof(ProjectId));
-            _isFromEnviromentVariable = true;
+                throw new FileNotFoundException("Credentials file not found.");
             return this;
         }
+
+        private string GetProjectId ()
+            => JsonConvert.DeserializeObject<CredentialFile>(File.ReadAllText(_jsonCredentialsPath)).ProjectId ??
+                throw new ArgumentNullException(nameof(ProjectId));
     }
 }

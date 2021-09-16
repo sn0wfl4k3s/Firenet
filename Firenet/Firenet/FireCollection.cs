@@ -60,7 +60,6 @@ namespace Firenet
         #region CommandSync Implementation
         public virtual TEntity Add(TEntity entity, Transaction transaction = null)
         {
-            entity = entity.SetUtcDatetimes();
             CollectionReference colRef = _database.Collection(_collectionName);
             if (transaction is not null)
             {
@@ -74,7 +73,6 @@ namespace Firenet
 
         public virtual TEntity Update(string id, TEntity entity, Transaction transaction = null)
         {
-            entity = entity.SetUtcDatetimes();
             DocumentReference docReference = _database.Collection(_collectionName).Document(id);
             if (transaction is not null)
             {

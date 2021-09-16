@@ -15,9 +15,16 @@ namespace Firenet
         public static IServiceCollection AddFirenet<TContext>(this IServiceCollection services, Action<FireOption> options)
             where TContext : FireContext
         {
-            var instance = FireContextBuilder<TContext>.Build(options);
-            services.AddSingleton(instance);
-            return services;
+            try
+            {
+                var instance = Activator.CreateInstance(typeof(TContext), options) as TContext;
+                services.AddSingleton(instance);
+                return services;
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException;
+            }
         }
 
         /// <summary>
@@ -30,9 +37,16 @@ namespace Firenet
         public static IServiceCollection AddFirenet<TContext>(this IServiceCollection services)
             where TContext : FireContext
         {
-            var instance = FireContextBuilder<TContext>.Build();
-            services.AddSingleton(instance);
-            return services;
+            try
+            {
+                var instance = Activator.CreateInstance<TContext>();
+                services.AddSingleton(instance);
+                return services;
+            }
+            catch (Exception e)
+            {
+                throw e.InnerException;
+            }
         }
     }
 }

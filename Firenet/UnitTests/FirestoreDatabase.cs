@@ -1,5 +1,4 @@
-﻿using Firenet;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnitTests.Models;
@@ -9,12 +8,13 @@ namespace UnitTests
     public class FirestoreDatabase : IDisposable
     {
         public static readonly string CredentialsPath = $@"C:\Users\{Environment.UserName}\Downloads\firebase-admin.json";
+        public static readonly string VariableGoogle = "GOOGLE_APPLICATION_CREDENTIALS";
 
         public AppDbContext Context { get; private set; }
 
         public FirestoreDatabase()
         {
-            Context = FireContextBuilder<AppDbContext>.Build(o => o.SetJsonCredentialsPath(CredentialsPath));
+            Context = new AppDbContext();
         }
 
         public void LoadAllData()
